@@ -102,34 +102,34 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INGEST-01 | TBD | Pending |
-| INGEST-02 | TBD | Pending |
-| INGEST-03 | TBD | Pending |
-| INGEST-04 | TBD | Pending |
-| INGEST-05 | TBD | Pending |
-| ADAPT-01 | TBD | Pending |
-| ADAPT-02 | TBD | Pending |
-| ADAPT-03 | TBD | Pending |
-| PIPE-01 | TBD | Pending |
-| PIPE-02 | TBD | Pending |
-| PIPE-03 | TBD | Pending |
-| PIPE-04 | TBD | Pending |
-| PIPE-05 | TBD | Pending |
-| PIPE-06 | TBD | Pending |
-| OUT-01 | TBD | Pending |
-| OUT-02 | TBD | Pending |
-| SAFE-01 | TBD | Pending |
-| SAFE-02 | TBD | Pending |
-| CONF-01 | TBD | Pending |
-| CONF-02 | TBD | Pending |
-| INFRA-01 | TBD | Pending |
-| INFRA-02 | TBD | Pending |
+| INGEST-01 | Phase 3: Log Ingestion | Pending |
+| INGEST-02 | Phase 3: Log Ingestion | Pending |
+| INGEST-03 | Phase 3: Log Ingestion | Pending |
+| INGEST-04 | Phase 3: Log Ingestion | Pending |
+| INGEST-05 | Phase 4: Storage Layer | Pending |
+| ADAPT-01 | Phase 5: Firewall Adapter | Pending |
+| ADAPT-02 | Phase 5: Firewall Adapter | Pending |
+| ADAPT-03 | Phase 5: Firewall Adapter | Pending |
+| PIPE-01 | Phase 7: Pipeline Core | Pending |
+| PIPE-02 | Phase 7: Pipeline Core | Pending |
+| PIPE-03 | Phase 7: Pipeline Core | Pending |
+| PIPE-04 | Phase 7: Pipeline Core | Pending |
+| PIPE-05 | Phase 7: Pipeline Core | Pending |
+| PIPE-06 | Phase 6: LLM Integration | Pending |
+| OUT-01 | Phase 8: Output and Safety | Pending |
+| OUT-02 | Phase 8: Output and Safety | Pending |
+| SAFE-01 | Phase 8: Output and Safety | Pending |
+| SAFE-02 | Phase 8: Output and Safety | Pending |
+| CONF-01 | Phase 2: Configuration System | Pending |
+| CONF-02 | Phase 2: Configuration System | Pending |
+| INFRA-01 | Phase 10: Infrastructure and Packaging | Pending |
+| INFRA-02 | Phase 10: Infrastructure and Packaging | Pending |
 
 **Coverage:**
 - v1 requirements: 22 total
-- Mapped to phases: 0
-- Unmapped: 22
+- Mapped to phases: 22
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-07*
-*Last updated: 2026-03-07 after initial definition*
+*Last updated: 2026-03-07 after roadmap creation*
