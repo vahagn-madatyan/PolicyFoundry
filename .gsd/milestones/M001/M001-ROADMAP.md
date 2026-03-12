@@ -78,7 +78,7 @@ This milestone is complete only when all are true:
 - [x] **S08: Output And Safety** `risk:medium` `depends:[S07]`
   > After this: Pipeline results render as Rich terminal tables with color-coded risk levels or export as structured JSON. LLMClient tracks token usage and cost per stage. Verified by formatter and safety tests against realistic pipeline output fixtures.
 
-- [ ] **S09: CLI Integration** `risk:high` `depends:[S08]`
+- [x] **S09: CLI Integration** `risk:high` `depends:[S08]`
   > After this: User runs `policyfoundry analyze --source local --format rich` and sees a complete Rich report with traffic analysis, rule proposals, risk tables, and cost summary. `--format json` outputs machine-readable JSON. `policyfoundry rules` displays current SG rules. ReadOnlyAdapter enforces suggest-only mode. All commands have `--help` text and show actionable errors on failure. Source code recovered from bytecode and full test suite passing.
 
 - [ ] **S10: Infrastructure And Packaging** `risk:low` `depends:[S09]`
