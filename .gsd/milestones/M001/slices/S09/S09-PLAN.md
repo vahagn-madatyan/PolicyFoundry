@@ -140,7 +140,7 @@
   - Verify: `uv run pytest tests/test_safety/ -x -v` → 6 safety tests pass; `uv run policyfoundry --help` → exits 0, shows commands; `uv run policyfoundry analyze --help` → shows options
   - Done when: Safety tests pass, CLI commands show help, entry point works
 
-- [ ] **T13: Complete CLI integration tests and final slice verification** `est:1.5h`
+- [x] **T13: Complete CLI integration tests and final slice verification** `est:1.5h`
   - Why: Integration tests prove the full stack composes through the real CLI entrypoint. This is the final proof for OUT-01, OUT-02, SAFE-01, SAFE-02. Without these tests, we only have unit coverage — the real composition hasn't been exercised.
   - Files: `tests/test_cli/conftest.py` (complete), `tests/test_cli/test_analyze.py` (complete), `tests/test_cli/test_rules.py` (complete), `tests/test_cli/test_config.py` (complete)
   - Do: Complete CLI integration test stubs from T01 with real assertions. Use `typer.testing.CliRunner` to invoke commands. Mock `LLMClient` and `AwsSecurityGroupAdapter` at the boundary (monkeypatch). Use `sample_pipeline_state` fixture pattern from `test_output/conftest.py`. Test: (1) analyze with --format rich → exit 0, output contains risk table headers and token usage. (2) analyze with --format json → exit 0, output is valid JSON with pipeline stages. (3) rules → exit 0, output contains rule data. (4) config → exit 0, output contains config keys. (5) error handling: invalid config → exit 1, actionable message, no traceback. Run full test suite including CLI tests.

@@ -290,3 +290,34 @@ class TestAnalyzeErrorHandling:
             result = cli_runner.invoke(app, ["analyze", "--sg-ids", "sg-12345"])
             assert result.exit_code == 1
             assert "Unexpected error" in result.output
+
+
+class TestAnalyzeSafetyEnforced:
+    """Tests that the analyze command wraps adapters in ReadOnlyAdapter (SAFE-01)."""
+
+    def test_analyze_safety_enforced(self, cli_runner, sample_pipeline_state):
+        """Verify the adapter passed to run_pipeline is wrapped in ReadOnlyAdapter."""
+        from policyfoundry.adapters.safety import ReadOnlyAdapter as ROA
+
+        mock_cfg, mock_llm, mock_adapter, pipeline_state = _make_mocks(sample_pipeline_state)
+
+        captured_adapter = {}
+
+        async def _capture_pipeline(**kwargs):
+            captured_adapter["adapter"] = kwargs.get("adapter")
+            return pipeline_state
+
+        with (
+            patch("policyfoundry.main.load_config", return_value=mock_cfg),
+            patch("policyfoundry.main.create_llm_client", new_callable=AsyncMock, return_value=mock_llm),
+            patch("policyfoundry.main.AdapterRegistry.get_adapter", return_value=mock_adapter),
+            patch("policyfoundry.main.run_pipeline", new_callable=AsyncMock, side_effect=_capture_pipeline),
+        ):
+            result = cli_runner.invoke(app, ["analyze", "--sg-ids", "sg-12345"])
+            assert result.exit_code == 0, f"Exit code {result.exit_code}: {result.output}"
+
+        # The adapter passed to run_pipeline must be a ReadOnlyAdapter instance
+        assert "adapter" in captured_adapter, "run_pipeline was not called with 'adapter' kwarg"
+        assert isinstance(captured_adapter["adapter"], ROA), (
+            f"Expected ReadOnlyAdapter, got {type(captured_adapter['adapter']).__name__}"
+        )

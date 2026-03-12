@@ -59,3 +59,23 @@ class TestConfigDisplay:
             parsed = json.loads(result.output)
             assert "llm" in parsed
             assert "sources" in parsed
+
+
+class TestHelpText:
+    """Tests for CLI --help output."""
+
+    def test_help_text_shows_all_commands(self, cli_runner):
+        """--help lists analyze, rules, and config commands."""
+        result = cli_runner.invoke(app, ["--help"])
+        assert result.exit_code == 0
+        assert "analyze" in result.output
+        assert "rules" in result.output
+        assert "config" in result.output
+
+    def test_analyze_help_shows_options(self, cli_runner):
+        """analyze --help shows --source, --format, and --sg-ids options."""
+        result = cli_runner.invoke(app, ["analyze", "--help"])
+        assert result.exit_code == 0
+        assert "--source" in result.output
+        assert "--format" in result.output
+        assert "--sg-ids" in result.output
