@@ -91,7 +91,7 @@
   - Verify: `uv run python -c "from policyfoundry.adapters.aws_sg.adapter import AwsSecurityGroupAdapter; from policyfoundry.output.rich_output import format_rich; from policyfoundry.output.json_output import format_json; print('OK')"`
   - Done when: All 8 files exist as `.py` and import correctly
 
-- [ ] **T06: Reconstruct src pipeline core and prompts from bytecode** `est:2h`
+- [x] **T06: Reconstruct src pipeline core and prompts from bytecode** `est:2h`
   - Why: Pipeline module is the heart of the system — LLM client, LangGraph graph definition, pipeline runner, and prompt templates. The CLI's `analyze` command calls `run_pipeline()` which orchestrates everything.
   - Files: `src/policyfoundry/pipeline/__init__.py`, `src/policyfoundry/pipeline/state.py`, `src/policyfoundry/pipeline/schema.py`, `src/policyfoundry/pipeline/llm.py`, `src/policyfoundry/pipeline/graph.py`, `src/policyfoundry/pipeline/runner.py`, `src/policyfoundry/pipeline/prompts/__init__.py`, `src/policyfoundry/pipeline/prompts/analyze.py`, `src/policyfoundry/pipeline/prompts/assess.py`, `src/policyfoundry/pipeline/prompts/generate.py`, `src/policyfoundry/pipeline/prompts/decide.py`
   - Do: Reconstruct `PipelineState` TypedDict (total=False, per D003). Reconstruct `TrafficAnalysis`, `SecurityAssessment`, `PolicyProposal`, `RuleDecision` Pydantic models. Reconstruct `LLMClient` with Instructor/LiteLLM integration (per D018, D019, D020) and `get_usage() -> TokenUsage`. Reconstruct `build_pipeline()` returning LangGraph `CompiledGraph`. Reconstruct `run_pipeline()` async function. Reconstruct prompt template strings — these are string constants extractable from bytecode.
