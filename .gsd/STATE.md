@@ -9,7 +9,7 @@
 - 🔄 **M001:** PolicyFoundry MVP
 
 ## Recent Decisions
-- D035: Fixed TrafficAnalysis field types (anomalies/bandwidth_outliers → list[dict], unique_sources/destinations → Field(ge=0))
+- None recorded
 
 ## Blockers
 - None
