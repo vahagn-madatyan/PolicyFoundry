@@ -70,7 +70,7 @@
   - Verify: `uv run python -c "from policyfoundry.exceptions import PolicyFoundryError, ConfigError, PipelineError; print('OK')"` and `uv run python -c "from policyfoundry.config.loader import load_config; print('OK')"`
   - Done when: All 7 files exist as `.py`, all config and exception classes importable with correct signatures
 
-- [ ] **T03: Reconstruct src ingestion module from bytecode** `est:2h`
+- [x] **T03: Reconstruct src ingestion module from bytecode** `est:2h`
   - Why: Ingestion module (schema, parser, dedup, local/S3 file readers) is consumed by the pipeline runner via `ingest_local_files()`. Must exist before pipeline integration.
   - Files: `src/policyfoundry/ingestion/__init__.py`, `src/policyfoundry/ingestion/schema.py`, `src/policyfoundry/ingestion/parser.py`, `src/policyfoundry/ingestion/dedup.py`, `src/policyfoundry/ingestion/result.py`, `src/policyfoundry/ingestion/local.py`, `src/policyfoundry/ingestion/s3.py`
   - Do: Reconstruct each file from bytecode. Parser has complex regex for VPC Flow Log v2 format — extract pattern strings from code constants. Local/S3 ingestion are async functions — ensure `async def` signatures.

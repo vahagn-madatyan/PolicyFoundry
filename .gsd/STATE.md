@@ -15,4 +15,4 @@
 - None
 
 ## Next Action
-Execute T03: Reconstruct src ingestion module from bytecode in slice S09.
+Execute T04 in slice S09 (next reconstruction task).
