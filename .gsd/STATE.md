@@ -9,8 +9,7 @@
 - 🔄 **M001:** PolicyFoundry MVP
 
 ## Recent Decisions
-- hatchling build-backend with `license = {text = "BSL-1.1"}` (hatchling rejects SPDX string form)
-- Typer CliRunner() without mix_stderr (Typer's CliRunner doesn't support it)
+- None recorded
 
 ## Blockers
 - None
