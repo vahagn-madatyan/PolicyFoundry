@@ -9,7 +9,7 @@
 - 🔄 **M001:** PolicyFoundry MVP
 
 ## Recent Decisions
-- D036: asyncio_mode = "auto" added to pyproject.toml (storage tests require it)
+- None recorded
 
 ## Blockers
 - None
