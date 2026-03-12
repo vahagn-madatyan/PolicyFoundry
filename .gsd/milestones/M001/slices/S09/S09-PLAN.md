@@ -56,7 +56,7 @@
 
 > **Note on task count:** This slice has 13 tasks due to the unprecedented requirement of reconstructing 92 source files from CPython 3.13 bytecode (D028, D029). Tasks T01–T11 handle reconstruction and verification; T12–T13 deliver the new CLI functionality. The reconstruction is a hard prerequisite (D028) and the slice was elevated to HIGH risk specifically for this reason (D029).
 
-- [ ] **T01: Build bytecode inspection toolkit, reconstruct pyproject.toml, create failing CLI test stubs** `est:1h`
+- [x] **T01: Build bytecode inspection toolkit, reconstruct pyproject.toml, create failing CLI test stubs** `est:1h`
   - Why: Establishes reconstruction tooling and verification-first test stubs before any source recovery begins. The decompilation toolkit is used by all subsequent reconstruction tasks. The failing test stubs define the done condition for the entire slice.
   - Files: `tools/inspect_pyc.py`, `pyproject.toml`, `tests/test_cli/__init__.py`, `tests/test_cli/conftest.py`, `tests/test_cli/test_analyze.py`, `tests/test_cli/test_rules.py`, `tests/test_cli/test_config.py`
   - Do: Build a Python script using `dis` + `marshal` + `types` that extracts structure from .pyc files (imports, class defs, function signatures, docstrings, constants). Reconstruct `pyproject.toml` from `.dist-info/METADATA` + `entry_points.txt`, adding `typer>=0.15` to deps. Create CLI integration test stubs with test function signatures and `pytest.skip("not yet implemented")` or direct assertions that will fail until T12–T13.
