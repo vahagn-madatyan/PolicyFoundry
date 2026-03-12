@@ -9,10 +9,10 @@
 - 🔄 **M001:** PolicyFoundry MVP
 
 ## Recent Decisions
-- None recorded
+- D037: Added reraise=True to LLMClient @retry decorator for tenacity 9.x compatibility
 
 ## Blockers
 - None
 
 ## Next Action
-Execute T11: Reconstruct test files — pipeline, safety — and verify full test suite in slice S09.
+Execute T12: Implement SafetyError, ReadOnlyAdapter, and build Typer CLI in slice S09.

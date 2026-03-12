@@ -126,7 +126,7 @@
   - Verify: `uv run pytest tests/test_adapters/ tests/test_output/ -x -v 2>&1 | tail -5` → all tests pass
   - Done when: All adapter and output tests pass
 
-- [ ] **T11: Reconstruct test files — pipeline, safety — and verify full test suite** `est:2h`
+- [x] **T11: Reconstruct test files — pipeline, safety — and verify full test suite** `est:2h`
   - Why: Pipeline tests are the largest test module (62 tests per roadmap) verifying the 5-stage LangGraph pipeline. Safety tests define the exact interface for `ReadOnlyAdapter` and `SafetyError` that T12 must implement. Running the full suite proves reconstruction fidelity across all 300+ tests.
   - Files: `tests/test_pipeline/__init__.py`, `tests/test_pipeline/conftest.py`, `tests/test_pipeline/test_stages.py`, `tests/test_pipeline/test_llm.py`, `tests/test_pipeline/test_prompts.py`, `tests/test_pipeline/test_graph.py`, `tests/test_safety/__init__.py`, `tests/test_safety/test_readonly_adapter.py`
   - Do: Reconstruct pipeline test files (large — test_stages and test_llm are the biggest test files in the project). Reconstruct safety tests (6 tests importing `ReadOnlyAdapter` from `policyfoundry.adapters.safety` and `SafetyError` from `policyfoundry.exceptions`). Run pipeline tests (safety tests expected to fail — no implementation yet). Then run full suite across all reconstructed tests; fix any reconstruction issues.

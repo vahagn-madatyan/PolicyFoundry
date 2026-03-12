@@ -154,6 +154,7 @@ class LLMClient:
         retry=retry_if_exception_type(_TRANSIENT_EXCEPTIONS),
         stop=stop_after_attempt(_MAX_TRANSIENT_RETRIES),
         wait=wait_exponential(min=_BACKOFF_MIN, max=_BACKOFF_MAX),
+        reraise=True,
     )
     async def _call_with_retry(
         self,
