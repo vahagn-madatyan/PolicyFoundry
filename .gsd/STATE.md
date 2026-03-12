@@ -9,7 +9,7 @@
 - 🔄 **M001:** PolicyFoundry MVP
 
 ## Recent Decisions
-- D037: Added reraise=True to LLMClient @retry decorator for tenacity 9.x compatibility
+- None recorded
 
 ## Blockers
 - None
