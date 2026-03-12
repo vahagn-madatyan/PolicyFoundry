@@ -105,7 +105,7 @@
   - Verify: `uv run python -c "from policyfoundry.pipeline.stages import analyze_stage, assess_stage, generate_stage, validate_stage, decide_stage; print('OK')"`
   - Done when: All 6 stage files exist as `.py`, all stage functions importable
 
-- [ ] **T08: Reconstruct test files — root, models, config, exceptions** `est:2h`
+- [x] **T08: Reconstruct test files — root, models, config, exceptions** `est:2h`
   - Why: These tests verify the foundational layers (domain models, config system, exception hierarchy) reconstructed in T02. Running them is the primary fidelity check for reconstruction quality.
   - Files: `tests/__init__.py`, `tests/conftest.py`, `tests/test_models/__init__.py`, `tests/test_models/test_flow_log.py`, `tests/test_models/test_universal_rule.py`, `tests/test_models/test_pipeline_state.py`, `tests/test_models/test_pipeline_schema.py`, `tests/test_config/__init__.py`, `tests/test_config/conftest.py`, `tests/test_config/test_loader.py`, `tests/test_config/test_models.py`, `tests/test_config/test_validation.py`, `tests/test_exceptions/__init__.py`, `tests/test_exceptions/test_exceptions.py`
   - Do: Reconstruct all test files from bytecode using `.venv/bin/python3` for `dis`. Extract test function names, fixture references, assertion patterns from code objects. `__init__.py` files are empty. `conftest.py` files contain shared fixtures. Run reconstructed tests against reconstructed src.

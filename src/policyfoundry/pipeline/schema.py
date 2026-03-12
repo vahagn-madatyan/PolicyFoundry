@@ -10,12 +10,12 @@ class TrafficAnalysis(BaseModel):
 
     summary: str
     total_flows: int = Field(ge=0)
-    unique_sources: int
-    unique_destinations: int
+    unique_sources: int = Field(ge=0)
+    unique_destinations: int = Field(ge=0)
     top_talkers: list[dict]
     port_distribution: list[dict]
-    anomalies: list[str]
-    bandwidth_outliers: list[str]
+    anomalies: list[dict]
+    bandwidth_outliers: list[dict]
 
 
 class SecurityAssessment(BaseModel):

@@ -9,10 +9,10 @@
 - 🔄 **M001:** PolicyFoundry MVP
 
 ## Recent Decisions
-- None recorded
+- D035: Fixed TrafficAnalysis field types (anomalies/bandwidth_outliers → list[dict], unique_sources/destinations → Field(ge=0))
 
 ## Blockers
 - None
 
 ## Next Action
-Execute T08: Reconstruct test files — root, models, config, exceptions in slice S09.
+Execute T09: Reconstruct test files — ingestion, storage in slice S09.
