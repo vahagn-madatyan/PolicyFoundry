@@ -15,4 +15,4 @@
 - None
 
 ## Next Action
-Execute T11: Reconstruct test files — pipeline in slice S09.
+Execute T11: Reconstruct test files — pipeline, safety — and verify full test suite in slice S09.
