@@ -15,4 +15,4 @@
 - None
 
 ## Next Action
-Execute T04 in slice S09 (next reconstruction task).
+Execute T04: Reconstruct src storage and adapters core from bytecode in slice S09.
