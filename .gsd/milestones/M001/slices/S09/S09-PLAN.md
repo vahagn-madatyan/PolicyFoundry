@@ -84,7 +84,7 @@
   - Verify: `uv run python -c "from policyfoundry.adapters.schema import RiskLevel, UniversalRule; from policyfoundry.adapters.registry import AdapterRegistry; from policyfoundry.storage.writer import write_records; print('OK')"`
   - Done when: All 9 files exist as `.py` and import correctly
 
-- [ ] **T05: Reconstruct src AWS SG adapter and output module from bytecode** `est:2h`
+- [x] **T05: Reconstruct src AWS SG adapter and output module from bytecode** `est:2h`
   - Why: AWS SG adapter (translator, client, adapter) implements the concrete `FirewallAdapter` for Security Groups. Output module (Rich formatter, JSON formatter, models) renders pipeline results to the terminal. Both are consumed directly by CLI commands.
   - Files: `src/policyfoundry/adapters/aws_sg/__init__.py`, `src/policyfoundry/adapters/aws_sg/translator.py`, `src/policyfoundry/adapters/aws_sg/client.py`, `src/policyfoundry/adapters/aws_sg/adapter.py`, `src/policyfoundry/output/__init__.py`, `src/policyfoundry/output/models.py`, `src/policyfoundry/output/json_output.py`, `src/policyfoundry/output/rich_output.py`
   - Do: Reconstruct AWS SG adapter: translator has static methods for rule conversion, client wraps boto3, adapter implements `FirewallAdapter` ABC. Reconstruct output: `TokenUsage` dataclass, `PipelineResult` Pydantic model with `from_state` classmethod, `format_rich()` with Rich tables and `RISK_COLORS` dict, `format_json()` via `PipelineResult`.

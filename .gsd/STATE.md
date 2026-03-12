@@ -15,4 +15,4 @@
 - None
 
 ## Next Action
-Execute T05: Reconstruct src AWS SG adapter and output module from bytecode in slice S09.
+Execute T06: Reconstruct src pipeline core and prompts from bytecode in slice S09.
