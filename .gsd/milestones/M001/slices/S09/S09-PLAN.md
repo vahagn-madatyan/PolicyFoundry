@@ -63,7 +63,7 @@
   - Verify: `uv run python tools/inspect_pyc.py src/policyfoundry/__pycache__/exceptions.cpython-313.pyc` produces structured output; `uv sync` succeeds with reconstructed `pyproject.toml`; `uv run pytest tests/test_cli/ -x` runs but tests fail (expected — no CLI yet)
   - Done when: Toolkit extracts class/function names from any .pyc file, pyproject.toml is valid, CLI test stubs exist and fail
 
-- [ ] **T02: Reconstruct src root and config module from bytecode** `est:2h`
+- [x] **T02: Reconstruct src root and config module from bytecode** `est:2h`
   - Why: Root `exceptions.py` defines the entire error hierarchy used by all modules. Config module is the first thing the CLI calls (`load_config()`). Both are prerequisites for everything downstream.
   - Files: `src/policyfoundry/__init__.py`, `src/policyfoundry/exceptions.py`, `src/policyfoundry/config/__init__.py`, `src/policyfoundry/config/defaults.py`, `src/policyfoundry/config/models.py`, `src/policyfoundry/config/validation.py`, `src/policyfoundry/config/loader.py`
   - Do: Use the T01 toolkit + `dis` disassembly via `.venv/bin/python3` to reconstruct each file. For Pydantic models in `config/models.py`, extract field names, types, and defaults from code object constants. For `exceptions.py`, reconstruct the class hierarchy (all leaf exception classes). Verify each module imports cleanly.
