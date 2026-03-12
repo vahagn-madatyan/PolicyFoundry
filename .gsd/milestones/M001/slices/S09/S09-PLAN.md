@@ -77,7 +77,7 @@
   - Verify: `uv run python -c "from policyfoundry.ingestion.local import ingest_local_files; from policyfoundry.ingestion.parser import parse_flow_log_line; print('OK')"`
   - Done when: All 7 ingestion files exist as `.py` and import without error
 
-- [ ] **T04: Reconstruct src storage and adapters core from bytecode** `est:2h`
+- [x] **T04: Reconstruct src storage and adapters core from bytecode** `est:2h`
   - Why: Storage layer (Parquet writer, DuckDB queries) and adapter framework (ABC, schema, registry) are both consumed by the pipeline. The adapter schema defines `UniversalRule`, `RiskLevel`, and other critical types used throughout.
   - Files: `src/policyfoundry/storage/__init__.py`, `src/policyfoundry/storage/models.py`, `src/policyfoundry/storage/parquet_schema.py`, `src/policyfoundry/storage/writer.py`, `src/policyfoundry/storage/queries.py`, `src/policyfoundry/adapters/__init__.py`, `src/policyfoundry/adapters/base.py`, `src/policyfoundry/adapters/schema.py`, `src/policyfoundry/adapters/registry.py`
   - Do: Reconstruct storage module (writer is async, queries use DuckDB SQL). Reconstruct adapter core: `FirewallAdapter` ABC with abstract methods (`get_rules`, `validate`, `apply_rule`, `apply_rules`, `capabilities`), `AdapterRegistry` with `get_adapter()` static method, and the full schema module with `RiskLevel` StrEnum, `UniversalRule`, `ValidationResult`, `AdapterCapabilities`, `Direction`, `RuleAction`, `PortRange`, `NetworkEndpoint`.
