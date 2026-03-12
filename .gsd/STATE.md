@@ -15,4 +15,4 @@
 - None
 
 ## Next Action
-Execute T07 in slice S09 (next task after T06 completion).
+Execute T07: Reconstruct src pipeline stages from bytecode in slice S09.
