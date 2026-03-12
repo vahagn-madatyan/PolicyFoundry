@@ -15,4 +15,4 @@
 - None
 
 ## Next Action
-Execute T06: Reconstruct src pipeline core and prompts from bytecode in slice S09.
+Execute T07 in slice S09 (next task after T06 completion).
