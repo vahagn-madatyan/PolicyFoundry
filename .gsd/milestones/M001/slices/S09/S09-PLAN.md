@@ -133,7 +133,7 @@
   - Verify: `uv run pytest tests/test_pipeline/ -x -v 2>&1 | tail -5` → pipeline tests pass; `uv run pytest tests/ --ignore=tests/test_safety --ignore=tests/test_cli -x -q 2>&1 | tail -3` → all non-safety, non-CLI tests pass
   - Done when: Full test suite passes (excluding test_safety and test_cli); safety test files exist and importable
 
-- [ ] **T12: Implement SafetyError, ReadOnlyAdapter, and build Typer CLI** `est:2h`
+- [x] **T12: Implement SafetyError, ReadOnlyAdapter, and build Typer CLI** `est:2h`
   - Why: This is the core deliverable of S09 — the actual CLI that users run. SafetyError + ReadOnlyAdapter implement SAFE-01 (suggest-only mode). The Typer app with analyze/rules/config commands implements OUT-01, OUT-02, and SAFE-02 through the CLI surface.
   - Files: `src/policyfoundry/exceptions.py` (modify), `src/policyfoundry/adapters/safety.py` (new), `src/policyfoundry/main.py` (new), `src/policyfoundry/__main__.py` (new)
   - Do: (1) Add `SafetyError(PolicyFoundryError)` to exceptions.py with error_code="SAFETY_VIOLATION". (2) Create `ReadOnlyAdapter(FirewallAdapter)` in `adapters/safety.py` — delegates `get_rules`, `validate`, `capabilities`; raises `SafetyError` on `apply_rule`/`apply_rules`. (3) Create `main.py` with Typer app: `analyze` command (sync wrapper → asyncio.run → load_config → create_llm_client → get_adapter → ReadOnlyAdapter → run_pipeline → format_rich/format_json + token usage), `rules` command (fetch + display SG rules), `config` command (show resolved config). (4) Create `__main__.py` calling `main()`. (5) Wire CLI error handler: catch PolicyFoundryError → Rich console error panel; `--debug` flag for full tracebacks. (6) Add Rich Status spinner for pipeline stages.

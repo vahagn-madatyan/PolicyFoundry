@@ -73,5 +73,18 @@ class PipelineError(PolicyFoundryError):
     """AI pipeline execution errors."""
 
 
+class SafetyError(PolicyFoundryError):
+    """Safety constraint violations (e.g. write attempts in read-only mode)."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        error_code: str | None = "SAFETY_VIOLATION",
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(message, error_code=error_code, details=details)
+
+
 class OutputError(PolicyFoundryError):
     """Output formatting and rendering errors."""

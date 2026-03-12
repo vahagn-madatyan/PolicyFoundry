@@ -15,4 +15,4 @@
 - None
 
 ## Next Action
-Execute T12: Implement SafetyError, ReadOnlyAdapter, and build Typer CLI in slice S09.
+Execute T13: Complete CLI integration tests and final slice verification in slice S09.
