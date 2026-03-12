@@ -9,10 +9,10 @@
 - 🔄 **M001:** PolicyFoundry MVP
 
 ## Recent Decisions
-- None recorded
+- D036: asyncio_mode = "auto" added to pyproject.toml (storage tests require it)
 
 ## Blockers
 - None
 
 ## Next Action
-Execute T09: Reconstruct test files — ingestion, storage in slice S09.
+Execute T10: Reconstruct test files — adapters, output in slice S09.

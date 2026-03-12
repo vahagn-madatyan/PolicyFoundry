@@ -112,7 +112,7 @@
   - Verify: `uv run pytest tests/test_models/ tests/test_config/ tests/test_exceptions/ -x -v 2>&1 | tail -5` → all tests pass
   - Done when: All tests in these 3 test modules + root pass
 
-- [ ] **T09: Reconstruct test files — ingestion, storage** `est:2h`
+- [x] **T09: Reconstruct test files — ingestion, storage** `est:2h`
   - Why: Ingestion and storage tests verify the data pipeline (parsing, dedup, Parquet writing, DuckDB queries). These are medium-to-large test files with complex fixtures.
   - Files: `tests/test_ingestion/__init__.py`, `tests/test_ingestion/conftest.py`, `tests/test_ingestion/test_local.py`, `tests/test_ingestion/test_dedup.py`, `tests/test_ingestion/test_parser.py`, `tests/test_ingestion/test_s3.py`, `tests/test_storage/__init__.py`, `tests/test_storage/conftest.py`, `tests/test_storage/test_queries.py`, `tests/test_storage/test_writer.py`
   - Do: Reconstruct test files from bytecode. Ingestion tests use sample flow log lines as fixtures. Storage tests use tmp_path for Parquet files and DuckDB. S3 tests use moto mocks (per D012).

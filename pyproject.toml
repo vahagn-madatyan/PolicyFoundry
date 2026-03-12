@@ -32,6 +32,9 @@ aws_sg = "policyfoundry.adapters.aws_sg:AwsSecurityGroupAdapter"
 [tool.hatch.build.targets.wheel]
 packages = ["src/policyfoundry"]
 
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
 [dependency-groups]
 dev = [
     "pytest>=9.0",
