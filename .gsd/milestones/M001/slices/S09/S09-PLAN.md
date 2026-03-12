@@ -98,7 +98,7 @@
   - Verify: `uv run python -c "from policyfoundry.pipeline.runner import run_pipeline; from policyfoundry.pipeline.llm import create_llm_client, LLMClient; from policyfoundry.pipeline.graph import build_pipeline; print('OK')"`
   - Done when: All 11 files exist as `.py` and import correctly
 
-- [ ] **T07: Reconstruct src pipeline stages from bytecode** `est:1.5h`
+- [x] **T07: Reconstruct src pipeline stages from bytecode** `est:1.5h`
   - Why: Five pipeline stage functions (analyze, assess, generate, validate, decide) are the LangGraph nodes that execute the AI pipeline. Each stage reads from `PipelineState`, calls LLM or adapter, and returns state updates.
   - Files: `src/policyfoundry/pipeline/stages/__init__.py`, `src/policyfoundry/pipeline/stages/analyze.py`, `src/policyfoundry/pipeline/stages/assess.py`, `src/policyfoundry/pipeline/stages/generate.py`, `src/policyfoundry/pipeline/stages/validate.py`, `src/policyfoundry/pipeline/stages/decide.py`
   - Do: Each stage follows a common pattern: extract data from state → format prompt → call LLM (or adapter for validate, per D026) → return dict update. Reconstruct using bytecode structure + patterns from D021 (PipelineContext DI), D022 (dict return), D024 (empty proposals handling), D025 (temperature settings). Validate stage is non-LLM (D026).

@@ -15,4 +15,4 @@
 - None
 
 ## Next Action
-Execute T07: Reconstruct src pipeline stages from bytecode in slice S09.
+Execute T08: Reconstruct test files — root, models, config, exceptions in slice S09.
