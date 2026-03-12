@@ -119,7 +119,7 @@
   - Verify: `uv run pytest tests/test_ingestion/ tests/test_storage/ -x -v 2>&1 | tail -5` → all tests pass
   - Done when: All ingestion and storage tests pass
 
-- [ ] **T10: Reconstruct test files — adapters, output** `est:2h`
+- [x] **T10: Reconstruct test files — adapters, output** `est:2h`
   - Why: Adapter tests verify SG translation, validation, and registry. Output tests verify Rich formatting and JSON serialization. Both are needed before CLI integration tests.
   - Files: `tests/test_adapters/__init__.py`, `tests/test_adapters/conftest.py`, `tests/test_adapters/test_registry.py`, `tests/test_adapters/test_schema.py`, `tests/test_adapters/test_validation.py`, `tests/test_adapters/test_aws_sg_translator.py`, `tests/test_adapters/test_aws_sg_adapter.py`, `tests/test_output/__init__.py`, `tests/test_output/conftest.py`, `tests/test_output/test_json_output.py`, `tests/test_output/test_rich_output.py`, `tests/test_output/test_models.py`
   - Do: Reconstruct from bytecode. Adapter tests use moto for AWS mocking and test the full translate → validate → capabilities flow. Output tests use `sample_pipeline_state` fixture from `test_output/conftest.py` (reusable for CLI tests). Output conftest is critical — it defines the pipeline state fixture used by T13.

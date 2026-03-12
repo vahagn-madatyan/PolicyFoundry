@@ -15,4 +15,4 @@
 - None
 
 ## Next Action
-Execute T10: Reconstruct test files — adapters, output in slice S09.
+Execute T11: Reconstruct test files — pipeline in slice S09.
