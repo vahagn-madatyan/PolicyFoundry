@@ -31,7 +31,7 @@
   - Verify: `.venv/bin/python -m pytest tests/e2e/ -v` passes; `.venv/bin/python -m pytest --tb=short -q` shows 349+ tests, 0 failures
   - Done when: E2E test exercises analyze command through real file I/O path and both output formats produce expected content
 
-- [ ] **T02: Dockerfile, docker-compose, and .dockerignore** `est:30m`
+- [x] **T02: Dockerfile, docker-compose, and .dockerignore** `est:30m`
   - Why: Packages PolicyFoundry for containerized usage (INFRA-02). Multi-stage build keeps image lean; Compose wires Ollama sidecar.
   - Files: `Dockerfile`, `docker-compose.yml`, `.dockerignore`
   - Do: Multi-stage Dockerfile — builder stage copies `pyproject.toml`, `uv.lock`, `src/` and installs with `uv pip install`; runtime stage uses `python:3.13-slim` with only the installed package. Compose defines `policyfoundry` service (build context `.`) and `ollama` sidecar (`ollama/ollama:latest`) with `POLICYFOUNDRY_LLM__BASE_URL=http://ollama:11434`. `.dockerignore` excludes `.venv`, `__pycache__`, `.git`, `.gsd`, `tests`, `infra`.

@@ -1,0 +1,18 @@
+# PolicyFoundry + Ollama sidecar
+#
+# Before first use, pull the model into the Ollama container:
+#   docker compose exec ollama ollama pull llama3.2
+
+services:
+  policyfoundry:
+    build: .
+    depends_on:
+      - ollama
+    environment:
+      # Point LLM client at the Ollama sidecar (overrides default localhost)
+      POLICYFOUNDRY_LLM__BASE_URL: "http://ollama:11434"
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"

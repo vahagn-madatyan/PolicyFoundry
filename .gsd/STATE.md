@@ -15,4 +15,4 @@
 - None
 
 ## Next Action
-Execute T02: Dockerfile, docker-compose, and .dockerignore in slice S10.
+Execute T03: Terraform HCL for test VPC with Security Groups and Flow Logs in slice S10.

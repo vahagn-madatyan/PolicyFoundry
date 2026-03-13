@@ -1,0 +1,27 @@
+# Version control
+.git/
+.gitignore
+
+# Virtual environments
+.venv/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+
+# Tests and dev tooling
+tests/
+infra/
+.gsd/
+
+# IDE
+.vscode/
+.idea/
+
+# Docker (avoid recursive context)
+Dockerfile
+docker-compose.yml
