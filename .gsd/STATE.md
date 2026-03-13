@@ -1,18 +1,18 @@
 # GSD State
 
-**Active Milestone:** None
+**Active Milestone:** M001 — PolicyFoundry MVP
 **Active Slice:** None
-**Phase:** idle
+**Phase:** complete
 **Requirements Status:** 0 active · 22 validated · 0 deferred · 0 out of scope
 
 ## Milestone Registry
-- ✅ **M001:** PolicyFoundry MVP — completed 2026-03-12 (361 tests, 10/10 slices, all 22 requirements validated)
+- ✅ **M001:** PolicyFoundry MVP
 
 ## Recent Decisions
-- D037: tenacity reraise=True for PipelineError propagation on retry exhaustion
+- None recorded
 
 ## Blockers
 - None
 
 ## Next Action
-M001 complete. No queued milestones. Ready for next milestone planning.
+All milestones complete.
