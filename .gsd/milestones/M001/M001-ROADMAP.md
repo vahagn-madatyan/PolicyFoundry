@@ -81,7 +81,7 @@ This milestone is complete only when all are true:
 - [x] **S09: CLI Integration** `risk:high` `depends:[S08]`
   > After this: User runs `policyfoundry analyze --source local --format rich` and sees a complete Rich report with traffic analysis, rule proposals, risk tables, and cost summary. `--format json` outputs machine-readable JSON. `policyfoundry rules` displays current SG rules. ReadOnlyAdapter enforces suggest-only mode. All commands have `--help` text and show actionable errors on failure. Source code recovered from bytecode and full test suite passing.
 
-- [ ] **S10: Infrastructure And Packaging** `risk:low` `depends:[S09]`
+- [x] **S10: Infrastructure And Packaging** `risk:low` `depends:[S09]`
   > After this: User runs `terraform apply` in `infra/` to create a test VPC with Security Groups and Flow Logs. `docker-compose up` launches PolicyFoundry with Ollama sidecar. E2E test proves the full pipeline from ingestion to Rich output against realistic fixture data.
 
 ## Boundary Map
