@@ -14,24 +14,28 @@ Point the CLI at real AWS VPC flow logs and get back actionable, justified Secur
 
 <!-- Shipped and confirmed valuable. -->
 
-(None yet — ship to validate)
+- [x] Ingest AWS VPC Flow Logs from S3 or local files and normalize to unified 10-field schema
+- [x] Store normalized logs as Parquet files queryable by DuckDB
+- [x] Run 5-stage agentic AI pipeline via LangGraph: Analyze → Assess → Generate → Validate → Decide
+- [x] Query existing AWS Security Group rules via boto3 adapter
+- [x] Produce vendor-neutral rule change recommendations (suggest-only mode)
+- [x] Output results as JSON or rich terminal UI with color-coded risk tables
+- [x] LLM routing via LiteLLM with Ollama as primary local provider
+- [x] All LLM outputs use structured Pydantic models (no free-text parsing)
+- [x] Token usage and estimated cost tracked per pipeline run
+- [x] ReadOnlyAdapter safety enforcement — no firewall modifications possible
+- [x] Terraform in-repo for bootstrapping AWS test infrastructure (VPC, SGs, Flow Logs)
+- [x] Dockerfile and docker-compose.yml for containerized usage with Ollama sidecar
 
 ### Active
 
 <!-- Current scope. Building toward these. -->
 
-- [ ] Ingest AWS VPC Flow Logs from S3 or local files and normalize to unified 10-field schema
-- [ ] Store normalized logs as Parquet files queryable by DuckDB
-- [ ] Run 4-stage agentic AI pipeline via LangGraph: Analyze → Assess → Generate Policy → Decide
-- [ ] Query existing AWS Security Group rules via boto3 adapter
-- [ ] Produce vendor-neutral rule change recommendations (suggest-only mode)
-- [ ] Output results as JSON, SARIF, or rich terminal UI
-- [ ] LLM routing via LiteLLM with Ollama as primary local provider
-- [ ] All LLM outputs use structured Pydantic models (no free-text parsing)
 - [ ] LangGraph checkpointing for pipeline resumability (SQLiteSaver)
 - [ ] Event-sourced immutable audit log for every rule change proposal
-- [ ] Terraform/CDK in-repo for bootstrapping AWS test infrastructure (VPC, SGs, EC2s, flow logs)
 - [ ] Human-in-the-loop approval gate via LangGraph interrupt
+- [ ] SARIF output format for CI/CD integration
+- [ ] Palo Alto Cloud NGFW adapter
 
 ### Out of Scope
 
@@ -83,4 +87,4 @@ Point the CLI at real AWS VPC flow logs and get back actionable, justified Secur
 | Pydantic v2 for all domain models | Type-safe, structured LLM output parsing, config validation | — Pending |
 
 ---
-*Last updated: 2026-03-07 after initialization*
+*Last updated: 2026-03-12 after M001 milestone completion*

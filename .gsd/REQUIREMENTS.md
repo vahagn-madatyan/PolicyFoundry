@@ -2,61 +2,51 @@
 
 ## Active
 
+(none)
+
+## Validated
+
 ### OUT-01 — User can view analysis results in Rich terminal with color-coded risk tables and summary panels
 
-- Status: active
+- Status: validated
 - Class: core-capability
 - Source: inferred
-- Primary Slice: S09
-
-User can view analysis results in Rich terminal with color-coded risk tables and summary panels
+- Validated by: S09
 
 ### OUT-02 — User can export analysis results as machine-readable JSON
 
-- Status: active
+- Status: validated
 - Class: core-capability
 - Source: inferred
-- Primary Slice: S09
-
-User can export analysis results as machine-readable JSON
+- Validated by: S09
 
 ### SAFE-01 — Tool operates in suggest-only mode — no firewall changes are applied
 
-- Status: active
+- Status: validated
 - Class: core-capability
 - Source: inferred
-- Primary Slice: S09
-
-Tool operates in suggest-only mode — no firewall changes are applied
+- Validated by: S09
 
 ### SAFE-02 — Each pipeline run tracks LLM token usage and estimated cost
 
-- Status: active
+- Status: validated
 - Class: core-capability
 - Source: inferred
-- Primary Slice: S09
+- Validated by: S09
 
-Each pipeline run tracks LLM token usage and estimated cost
+### INFRA-01 — Terraform configuration bootstraps AWS test environment (VPC, Security Groups, VPC Flow Logs enabled)
 
-### INFRA-01 — Terraform configuration bootstraps AWS test environment (VPC, Security Groups, EC2 instances generating traffic, VPC Flow Logs enabled)
-
-- Status: active
+- Status: validated
 - Class: core-capability
 - Source: inferred
-- Primary Slice: S10
-
-Terraform configuration bootstraps AWS test environment (VPC, Security Groups, EC2 instances generating traffic, VPC Flow Logs enabled)
+- Validated by: S10
 
 ### INFRA-02 — Dockerfile and docker-compose.yml for containerized usage
 
-- Status: active
+- Status: validated
 - Class: core-capability
 - Source: inferred
-- Primary Slice: S10
-
-Dockerfile and docker-compose.yml for containerized usage
-
-## Validated
+- Validated by: S10
 
 ### INGEST-01 — User can parse AWS VPC Flow Logs from local files
 

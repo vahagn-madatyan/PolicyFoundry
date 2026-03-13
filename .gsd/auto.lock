@@ -1,9 +1,9 @@
 {
   "pid": 43710,
-  "startedAt": "2026-03-13T06:26:31.239Z",
-  "unitType": "execute-task",
-  "unitId": "M001/S10/T03",
-  "unitStartedAt": "2026-03-13T06:26:31.239Z",
-  "completedUnits": 4,
-  "sessionFile": "/Users/djbeatbug/.gsd/sessions/--Users-djbeatbug-RoadToMillion-PolicyFoundry--/2026-03-13T06-26-31-238Z_535a49dc-c5e2-473e-b260-a8bb0796903b.jsonl"
+  "startedAt": "2026-03-13T06:29:01.338Z",
+  "unitType": "complete-milestone",
+  "unitId": "M001",
+  "unitStartedAt": "2026-03-13T06:29:01.338Z",
+  "completedUnits": 5,
+  "sessionFile": "/Users/djbeatbug/.gsd/sessions/--Users-djbeatbug-RoadToMillion-PolicyFoundry--/2026-03-13T06-29-01-337Z_09e3afbf-2b47-47dc-947b-4fc59fcbc1b6.jsonl"
 }
