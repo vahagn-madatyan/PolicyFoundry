@@ -1,9 +1,9 @@
 {
-  "pid": 39003,
-  "startedAt": "2026-03-12T19:11:21.754Z",
-  "unitType": "reassess-roadmap",
-  "unitId": "M001/S09",
-  "unitStartedAt": "2026-03-12T19:11:21.754Z",
-  "completedUnits": 14,
-  "sessionFile": "/Users/djbeatbug/.gsd/sessions/--Users-djbeatbug-RoadToMillion-PolicyFoundry--/2026-03-12T19-11-21-754Z_786f9141-976f-4b98-b40e-e136a82fc40c.jsonl"
+  "pid": 43710,
+  "startedAt": "2026-03-13T06:08:21.274Z",
+  "unitType": "research-slice",
+  "unitId": "M001/S10",
+  "unitStartedAt": "2026-03-13T06:08:21.274Z",
+  "completedUnits": 0,
+  "sessionFile": "/Users/djbeatbug/.gsd/sessions/--Users-djbeatbug-RoadToMillion-PolicyFoundry--/2026-03-13T06-08-21-273Z_c77b072b-10fc-4117-815d-471fdcc41110.jsonl"
 }
