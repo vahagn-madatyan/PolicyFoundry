@@ -1,9 +1,9 @@
 {
   "pid": 43710,
-  "startedAt": "2026-03-13T06:08:21.274Z",
-  "unitType": "research-slice",
+  "startedAt": "2026-03-13T06:13:17.431Z",
+  "unitType": "plan-slice",
   "unitId": "M001/S10",
-  "unitStartedAt": "2026-03-13T06:08:21.274Z",
-  "completedUnits": 0,
-  "sessionFile": "/Users/djbeatbug/.gsd/sessions/--Users-djbeatbug-RoadToMillion-PolicyFoundry--/2026-03-13T06-08-21-273Z_c77b072b-10fc-4117-815d-471fdcc41110.jsonl"
+  "unitStartedAt": "2026-03-13T06:13:17.431Z",
+  "completedUnits": 1,
+  "sessionFile": "/Users/djbeatbug/.gsd/sessions/--Users-djbeatbug-RoadToMillion-PolicyFoundry--/2026-03-13T06-13-17-430Z_1c64aec4-0dc8-4c6a-a6fd-91fd14d707b6.jsonl"
 }
