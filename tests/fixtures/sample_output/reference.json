@@ -1,0 +1,114 @@
+{
+  "run_id": "placeholder-run-id",
+  "started_at": "2025-01-15T10:00:00+00:00",
+  "current_stage": "decide",
+  "analysis": {
+    "summary": "Test traffic analysis.",
+    "total_flows": 16,
+    "unique_sources": 8,
+    "unique_destinations": 6,
+    "top_talkers": [
+      {
+        "ip": "10.0.7.7",
+        "bytes": 8000
+      }
+    ],
+    "port_distribution": [
+      {
+        "port": 443,
+        "protocol": "TCP",
+        "count": 3
+      }
+    ],
+    "anomalies": [
+      {
+        "type": "external_ssh",
+        "description": "SSH from external"
+      }
+    ],
+    "bandwidth_outliers": [
+      {
+        "ip": "10.0.7.7",
+        "bytes": 8000,
+        "z_score": 2.1
+      }
+    ]
+  },
+  "assessment": {
+    "overall_risk": "MEDIUM",
+    "risk_scores": [
+      {
+        "category": "exposure",
+        "score": 0.6,
+        "description": "Moderate"
+      }
+    ],
+    "rule_gaps": [
+      {
+        "severity": "HIGH",
+        "description": "SSH exposed"
+      }
+    ],
+    "compliance_findings": [
+      "CIS 4.1: SSH too broad"
+    ]
+  },
+  "proposals": [
+    {
+      "proposal_id": "PROP-001",
+      "rule": {
+        "id": null,
+        "name": "restrict-ssh",
+        "description": "Block SSH external.",
+        "action": "DENY",
+        "direction": "INBOUND",
+        "protocol": "TCP",
+        "source": [
+          {
+            "cidr": "203.0.113.0/24",
+            "security_group_id": null,
+            "tag": null,
+            "is_any": false
+          }
+        ],
+        "destination": [],
+        "port_range": {
+          "from_port": 22,
+          "to_port": 22
+        },
+        "priority": null,
+        "zone": null,
+        "tags": {}
+      },
+      "justification": "Block SSH from probing network.",
+      "risk_level": "LOW",
+      "confidence": 0.92,
+      "impact_analysis": "Blocks external SSH probes."
+    }
+  ],
+  "decisions": [
+    {
+      "decision_id": "DEC-001",
+      "proposal_id": "PROP-001",
+      "action": "APPROVE",
+      "risk_level": "LOW",
+      "reason": "Low risk deny.",
+      "approval_required": false
+    }
+  ],
+  "token_usage": {
+    "prompt_tokens": 1200,
+    "completion_tokens": 400,
+    "total_tokens": 1600,
+    "total_cost": 0.0032,
+    "calls": [
+      {
+        "prompt_tokens": 400,
+        "completion_tokens": 120,
+        "total_tokens": 520,
+        "cost": 0.001,
+        "stage": "analyze"
+      }
+    ]
+  }
+}

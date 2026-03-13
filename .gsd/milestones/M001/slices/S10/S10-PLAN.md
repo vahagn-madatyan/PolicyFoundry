@@ -24,7 +24,7 @@
 
 ## Tasks
 
-- [ ] **T01: E2E test with flow log fixtures and reference output** `est:45m`
+- [x] **T01: E2E test with flow log fixtures and reference output** `est:45m`
   - Why: Proves the full CLI pipeline works end-to-end against realistic data before packaging. Creates the fixture files that the reference output captures depend on.
   - Files: `tests/fixtures/sample_flowlogs/vpc_flow_sample.log`, `tests/fixtures/sample_output/reference.json`, `tests/e2e/__init__.py`, `tests/e2e/conftest.py`, `tests/e2e/test_e2e_analyze.py`
   - Do: Create sample flow log fixture with valid v2 lines (reuse patterns from `tests/test_ingestion/conftest.py`). Write E2E test that uses CliRunner with real config → real ingestion → real storage → mocked LLM/adapter (D033), verifying both Rich and JSON output. Capture reference JSON output fixture for structural regression testing. Rich reference uses content pattern assertions (not byte-exact).
