@@ -38,7 +38,7 @@
   - Verify: `docker build -t policyfoundry:test .` succeeds (or Dockerfile review if Docker unavailable); `docker compose config` validates
   - Done when: Dockerfile builds a working image, compose config validates, .dockerignore excludes build artifacts
 
-- [ ] **T03: Terraform HCL for test VPC with Security Groups and Flow Logs** `est:30m`
+- [x] **T03: Terraform HCL for test VPC with Security Groups and Flow Logs** `est:30m`
   - Why: Delivers INFRA-01 — bootstraps an AWS test environment users can `terraform apply` against a real account.
   - Files: `infra/terraform/main.tf`, `infra/terraform/variables.tf`, `infra/terraform/outputs.tf`, `infra/terraform/versions.tf`
   - Do: Write Terraform >= 1.9 HCL with AWS provider. Resources: VPC, 2 subnets (public/private), Security Group with sample ingress/egress rules (separate `aws_vpc_security_group_ingress_rule`/`aws_vpc_security_group_egress_rule` resources per AWS best practice), S3 bucket with random suffix for Flow Log delivery, IAM role + bucket policy for `delivery.logs.amazonaws.com`, VPC Flow Log to S3 in Parquet format. Variables for region, CIDR, and naming prefix. Outputs for VPC ID, SG ID, S3 bucket name.
