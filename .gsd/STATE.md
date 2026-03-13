@@ -8,16 +8,11 @@
 ## Milestone Registry
 - 🔄 **M001:** PolicyFoundry MVP
 
-## Current Slice Progress
-- [ ] T01: E2E test with flow log fixtures and reference output
-- [ ] T02: Dockerfile, docker-compose, and .dockerignore
-- [ ] T03: Terraform HCL for test VPC with Security Groups and Flow Logs
-
 ## Recent Decisions
-- None new for S10 planning (all patterns follow D027, D033)
+- None recorded
 
 ## Blockers
 - None
 
 ## Next Action
-Execute T01 — E2E test with flow log fixtures and reference output.
+Execute T01: E2E test with flow log fixtures and reference output in slice S10.
