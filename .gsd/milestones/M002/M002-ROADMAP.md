@@ -68,7 +68,7 @@ This milestone is complete only when all are true:
 - [x] **S02: Traffic Pre-Processing** `risk:medium` `depends:[S01]`
   > After this: 83K raw flows collapse into ~600 aggregated tuples with direction labels (inbound/outbound) and subnet grouping candidates (e.g. 133 IPs → 10.195.228.0/24) — verified by unit tests and Rich summary table displayed in terminal.
 
-- [ ] **S03: Analysis Pipeline** `risk:high` `depends:[S02]`
+- [x] **S03: Analysis Pipeline** `risk:high` `depends:[S02]`
   > After this: Full LangGraph pipeline (Analyze → Assess → Generate → Validate → Decide) produces risk-scored FW rule proposals with AI-generated justifications from Excel traffic data — displayed as Rich terminal report with token usage footer. NullAdapter handles no-FW mode.
 
 - [ ] **S04: Change Request Form Export** `risk:medium` `depends:[S03]`

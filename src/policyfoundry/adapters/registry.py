@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 _ENTRY_POINT_GROUP = "policyfoundry.adapters"
 _BUILTIN_ADAPTER_NAME = "aws_sg"
+_BUILTIN_NULL_ADAPTER_NAME = "null"
 
 
 class AdapterRegistry:
@@ -41,6 +42,11 @@ class AdapterRegistry:
             except ImportError:
                 pass
 
+        if name == _BUILTIN_NULL_ADAPTER_NAME:
+            from policyfoundry.adapters.null import NullAdapter
+
+            return NullAdapter()
+
         msg = f"Adapter '{name}' not found in registry"
         raise AdapterNotFoundError(msg, error_code="ADAPTER_NOT_FOUND")
 
@@ -54,4 +60,6 @@ class AdapterRegistry:
         names = [ep.name for ep in eps]
         if _BUILTIN_ADAPTER_NAME not in names:
             names.append(_BUILTIN_ADAPTER_NAME)
+        if _BUILTIN_NULL_ADAPTER_NAME not in names:
+            names.append(_BUILTIN_NULL_ADAPTER_NAME)
         return names

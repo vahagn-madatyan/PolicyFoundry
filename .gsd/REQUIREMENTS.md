@@ -12,29 +12,9 @@
 
 ### ~~R105~~ → Validated (see Validated section)
 
-### R106 — Multi-stage LangGraph pipeline for Excel traffic analysis
+### ~~R106~~ → Validated (see Validated section)
 
-- Class: core-capability
-- Status: active
-- Description: A rigorous multi-stage LangGraph pipeline with multiple agent stages analyzes traffic, infers likely existing rules, generates proposals, validates them, and produces final risk-scored recommendations.
-- Why it matters: This is the core intelligence. Multiple stages ensure cross-checking — not a single LLM call producing unchecked output.
-- Source: user
-- Primary owning slice: M002/S03
-- Supporting slices: none
-- Validation: unmapped
-- Notes: Must use at least 4 LLM stages. Adapter interface must be flexible for future FW querying (M003).
-
-### R107 — AI-generated business justification and risk per proposed rule
-
-- Class: core-capability
-- Status: active
-- Description: Each proposed firewall rule includes an AI-generated business justification explaining why the rule is needed and a risk classification (LOW/MEDIUM/HIGH/CRITICAL).
-- Why it matters: Change request forms require justification text and risk assessment. The AI produces these so the user doesn't have to write them manually.
-- Source: user
-- Primary owning slice: M002/S03
-- Supporting slices: M002/S04
-- Validation: unmapped
-- Notes: none
+### ~~R107~~ → Validated (see Validated section)
 
 ### R108 — Rich terminal output showing proposed FW rules
 
@@ -84,17 +64,7 @@
 - Validation: unmapped
 - Notes: Built-in default template ships with the tool for users without a custom form.
 
-### R112 — Flexible adapter interface for future FW rule querying
-
-- Class: core-capability
-- Status: active
-- Description: The pipeline uses a NullAdapter when no real FW is available, but the adapter interface is ready for M003 where real FW rules will be queried and compared.
-- Why it matters: Building the adapter seam now avoids a major refactor when live FW integration is added.
-- Source: user
-- Primary owning slice: M002/S03
-- Supporting slices: none
-- Validation: unmapped
-- Notes: NullAdapter returns empty rules; assess stage infers from traffic patterns instead.
+### ~~R112~~ → Validated (see Validated section)
 
 ## Validated
 
@@ -121,6 +91,42 @@
 - Supporting slices: none
 - Validation: validated
 - Notes: Verified by TestColumnMappingOverride tests proving config override works with both standard and non-standard headers. ExcelConfig nested in PolicyFoundryConfig.
+
+### R106 — Multi-stage LangGraph pipeline for Excel traffic analysis
+
+- Class: core-capability
+- Status: validated
+- Description: A rigorous multi-stage LangGraph pipeline with multiple agent stages analyzes traffic, infers likely existing rules, generates proposals, validates them, and produces final risk-scored recommendations.
+- Why it matters: This is the core intelligence. Multiple stages ensure cross-checking — not a single LLM call producing unchecked output.
+- Source: user
+- Primary owning slice: M002/S03
+- Supporting slices: none
+- Validation: validated
+- Notes: 5-node LangGraph (Analyze → Assess → Generate → Validate → Decide) verified by 27 stage unit tests + 9 pipeline integration tests with mock LLM. All stages compose end-to-end. NullAdapter default preserves adapter interface for M003.
+
+### R107 — AI-generated business justification and risk per proposed rule
+
+- Class: core-capability
+- Status: validated
+- Description: Each proposed firewall rule includes an AI-generated business justification explaining why the rule is needed and a risk classification (LOW/MEDIUM/HIGH/CRITICAL).
+- Why it matters: Change request forms require justification text and risk assessment. The AI produces these so the user doesn't have to write them manually.
+- Source: user
+- Primary owning slice: M002/S03
+- Supporting slices: M002/S04
+- Validation: validated
+- Notes: Generate stage produces PolicyProposal with justification field; Decide stage assigns risk classification and action (CREATE/SKIP). Verified by mock LLM structured output tests.
+
+### R112 — Flexible adapter interface for future FW rule querying
+
+- Class: core-capability
+- Status: validated
+- Description: The pipeline uses a NullAdapter when no real FW is available, but the adapter interface is ready for M003 where real FW rules will be queried and compared.
+- Why it matters: Building the adapter seam now avoids a major refactor when live FW integration is added.
+- Source: user
+- Primary owning slice: M002/S03
+- Supporting slices: none
+- Validation: validated
+- Notes: NullAdapter implements FirewallAdapter ABC, registered in AdapterRegistry as built-in. 15 contract tests verify ABC compliance. Pipeline defaults to NullAdapter when no adapter provided. Assess stage infers from traffic patterns when rules are empty.
 
 ### OUT-01 — User can view analysis results in Rich terminal with color-coded risk tables and summary panels
 
@@ -419,13 +425,13 @@
 | R103 | core-capability | active | M002/S02 | none | unmapped |
 | R104 | core-capability | active | M002/S02 | none | unmapped |
 | R105 | core-capability | active | M002/S02 | M002/S03 | unmapped |
-| R106 | core-capability | active | M002/S03 | none | unmapped |
-| R107 | core-capability | active | M002/S03 | M002/S04 | unmapped |
+| R106 | core-capability | validated | M002/S03 | none | validated |
+| R107 | core-capability | validated | M002/S03 | M002/S04 | validated |
 | R108 | core-capability | active | M002/S05 | none | unmapped |
 | R109 | core-capability | active | M002/S04 | none | unmapped |
 | R110 | core-capability | active | M002/S04 | none | unmapped |
 | R111 | core-capability | active | M002/S04 | none | unmapped |
-| R112 | core-capability | active | M002/S03 | none | unmapped |
+| R112 | core-capability | validated | M002/S03 | none | validated |
 | R201 | core-capability | deferred | M003 | none | unmapped |
 | R202 | core-capability | deferred | M003 | none | unmapped |
 | R301 | anti-feature | out-of-scope | none | none | n/a |
@@ -455,9 +461,9 @@
 
 ## Coverage Summary
 
-- Active requirements: 10
-- Mapped to slices: 10
-- Validated: 24 (22 from M001, 2 from M002/S01)
+- Active requirements: 7
+- Mapped to slices: 7
+- Validated: 27 (22 from M001, 2 from M002/S01, 3 from M002/S03)
 - Deferred: 2 (M003)
 - Out of scope: 2
 - Unmapped active requirements: 0
