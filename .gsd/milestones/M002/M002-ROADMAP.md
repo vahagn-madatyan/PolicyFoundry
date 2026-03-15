@@ -62,7 +62,7 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: Excel Ingestion & Column Auto-Detection** `risk:medium` `depends:[]`
+- [x] **S01: Excel Ingestion & Column Auto-Detection** `risk:medium` `depends:[]`
   > After this: `policyfoundry analyze --source excel --file traffic.xlsx` parses the sample Excel, auto-detects all 10 columns, and prints a summary showing "Parsed 83,633 flows from 10 columns" with detected column mapping — verified by unit tests and CLI output.
 
 - [ ] **S02: Traffic Pre-Processing** `risk:medium` `depends:[S01]`

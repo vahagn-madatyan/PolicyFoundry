@@ -110,16 +110,104 @@ def main_callback(
         )
 
 
+def _run_excel_ingestion(
+    file_path: Path,
+    cfg: "PolicyFoundryConfig",
+    output_format: str,
+) -> None:
+    """Handle --source excel: parse file and print summary.
+
+    Resolves ExcelConfig overrides (column_mapping, sheet_name, header_row),
+    calls ingest_excel_file, and renders a Rich summary panel or JSON.
+    """
+    from policyfoundry.ingestion.excel import ingest_excel_file
+    from policyfoundry.ingestion.excel_schema import ColumnMapping
+
+    # Resolve ExcelConfig overrides
+    excel_cfg = cfg.excel
+    column_mapping = None
+    if excel_cfg.column_mapping is not None:
+        column_mapping = ColumnMapping(**excel_cfg.column_mapping)
+
+    result = ingest_excel_file(
+        path=file_path,
+        column_mapping=column_mapping,
+        sheet_name=excel_cfg.sheet_name,
+        header_row=excel_cfg.header_row,
+    )
+
+    if output_format == "json":
+        import json as _json
+
+        summary = {
+            "source_file": result.source_file,
+            "total_rows": result.total_rows,
+            "parsed_rows": result.parsed_rows,
+            "skipped_rows": result.skipped_rows,
+            "column_mapping": result.column_mapping.model_dump() if result.column_mapping else None,
+            "warnings_count": len(result.warnings),
+        }
+        typer.echo(_json.dumps(summary, indent=2))
+    else:
+        # Rich summary panel
+        mapping_table = Table(
+            title="Column Mapping",
+            show_header=True,
+            header_style="bold cyan",
+            box=None,
+            padding=(0, 2),
+        )
+        mapping_table.add_column("Field", style="bold")
+        mapping_table.add_column("Column Index", justify="right")
+
+        if result.column_mapping:
+            for field_name, col_idx in result.column_mapping.model_dump().items():
+                mapping_table.add_row(field_name, str(col_idx))
+
+        stats_lines = [
+            f"[bold]Source file:[/bold] {result.source_file}",
+            f"[bold]Total rows:[/bold]  {result.total_rows:,}",
+            f"[bold]Parsed rows:[/bold] {result.parsed_rows:,}",
+            f"[bold]Skipped rows:[/bold] {result.skipped_rows:,}",
+        ]
+
+        if result.warnings:
+            stats_lines.append(
+                f"[bold]Warnings:[/bold]     {len(result.warnings):,}"
+            )
+
+        console.print()
+        console.print(
+            Panel(
+                "\n".join(stats_lines),
+                title="[bold green]Excel Ingestion Summary[/bold green]",
+                border_style="green",
+            )
+        )
+        console.print()
+        console.print(mapping_table)
+
+        if result.warnings and _verbose:
+            console.print()
+            console.print("[bold yellow]Warnings (first 20):[/bold yellow]")
+            for w in result.warnings[:20]:
+                console.print(f"  ⚠ {w}")
+
+
 @app.command()
 def analyze(
     source: Annotated[
         str,
-        typer.Option("--source", help="Log source type (local or s3)."),
+        typer.Option("--source", help="Log source type (local, s3, or excel)."),
     ] = "local",
     format: Annotated[
         str,
         typer.Option("--format", help="Output format: rich or json."),
     ] = "rich",
+    file: Annotated[
+        Optional[Path],
+        typer.Option("--file", help="Path to input file (required for --source excel)."),
+    ] = None,
     sg_ids: Annotated[
         Optional[list[str]],
         typer.Option("--sg-ids", help="Security group IDs to analyze."),
@@ -133,11 +221,11 @@ def analyze(
         typer.Option("--debug", help="Enable debug output."),
     ] = False,
 ) -> None:
-    """Run the full analysis pipeline on VPC flow logs.
+    """Run the analysis pipeline on VPC flow logs or Excel traffic exports.
 
-    Loads configuration, creates an LLM client, fetches firewall rules
-    via a ReadOnlyAdapter, and runs the analysis pipeline. Output is
-    rendered as Rich tables (default) or JSON.
+    For Excel sources: parses the file, auto-detects columns, and prints
+    an ingestion summary. For VPC flow log sources: runs the full analysis
+    pipeline with LLM-powered rule recommendations.
     """
     global _debug  # noqa: PLW0603
     if debug:
@@ -150,6 +238,18 @@ def analyze(
             overrides["_yaml_file"] = str(config_path)
         cfg = load_config(**overrides)
 
+        # Excel source — parse and summarize (no pipeline yet)
+        if source == "excel":
+            if file is None:
+                raise PolicyFoundryError(
+                    "The --file option is required when using --source excel. "
+                    "Example: policyfoundry analyze --source excel --file traffic.xlsx",
+                    error_code="MISSING_FILE_OPTION",
+                )
+            _run_excel_ingestion(file, cfg, format)
+            return
+
+        # VPC flow log sources (local, s3)
         # Resolve SG IDs from CLI args or config
         resolved_sg_ids = list(sg_ids) if sg_ids else cfg.targets.security_group_ids
         if not resolved_sg_ids:

@@ -2,29 +2,9 @@
 
 ## Active
 
-### R101 — Excel traffic log ingestion with auto-detect column mapping
+### ~~R101~~ → Validated (see Validated section)
 
-- Class: core-capability
-- Status: active
-- Description: User can provide an Excel (.xlsx) file containing firewall traffic logs. The tool auto-detects column meanings from header names and normalizes the data for pipeline consumption.
-- Why it matters: This is the primary input path for M002. Without flexible Excel parsing, the tool can't handle real-world traffic exports from different firewall vendors.
-- Source: user
-- Primary owning slice: M002/S01
-- Supporting slices: none
-- Validation: unmapped
-- Notes: Must handle whitespace-padded values and "(no DNS resolution)" annotations in hostnames.
-
-### R102 — Config override for custom column mappings
-
-- Class: core-capability
-- Status: active
-- Description: User can provide a column mapping configuration (via config YAML or CLI flag) to override auto-detection when headers are non-standard.
-- Why it matters: Different firewall vendors export different column layouts. Auto-detect covers common cases; config override covers the rest.
-- Source: user
-- Primary owning slice: M002/S01
-- Supporting slices: none
-- Validation: unmapped
-- Notes: none
+### ~~R102~~ → Validated (see Validated section)
 
 ### R103 — Traffic flow aggregation into connection tuples
 
@@ -147,6 +127,30 @@
 - Notes: NullAdapter returns empty rules; assess stage infers from traffic patterns instead.
 
 ## Validated
+
+### R101 — Excel traffic log ingestion with auto-detect column mapping
+
+- Class: core-capability
+- Status: validated
+- Description: User can provide an Excel (.xlsx) file containing firewall traffic logs. The tool auto-detects column meanings from header names and normalizes the data for pipeline consumption.
+- Why it matters: This is the primary input path for M002. Without flexible Excel parsing, the tool can't handle real-world traffic exports from different firewall vendors.
+- Source: user
+- Primary owning slice: M002/S01
+- Supporting slices: none
+- Validation: validated
+- Notes: Verified by 54 tests (schema, column detection, parsing) plus CLI demo parsing 83,633 rows with all 10 columns auto-detected. Handles whitespace stripping and DNS annotation cleanup.
+
+### R102 — Config override for custom column mappings
+
+- Class: core-capability
+- Status: validated
+- Description: User can provide a column mapping configuration (via config YAML or CLI flag) to override auto-detection when headers are non-standard.
+- Why it matters: Different firewall vendors export different column layouts. Auto-detect covers common cases; config override covers the rest.
+- Source: user
+- Primary owning slice: M002/S01
+- Supporting slices: none
+- Validation: validated
+- Notes: Verified by TestColumnMappingOverride tests proving config override works with both standard and non-standard headers. ExcelConfig nested in PolicyFoundryConfig.
 
 ### OUT-01 — User can view analysis results in Rich terminal with color-coded risk tables and summary panels
 
@@ -440,8 +444,8 @@
 
 | ID | Class | Status | Primary owner | Supporting | Proof |
 |---|---|---|---|---|---|
-| R101 | core-capability | active | M002/S01 | none | unmapped |
-| R102 | core-capability | active | M002/S01 | none | unmapped |
+| R101 | core-capability | validated | M002/S01 | none | validated |
+| R102 | core-capability | validated | M002/S01 | none | validated |
 | R103 | core-capability | active | M002/S02 | none | unmapped |
 | R104 | core-capability | active | M002/S02 | none | unmapped |
 | R105 | core-capability | active | M002/S02 | M002/S03 | unmapped |
@@ -481,9 +485,9 @@
 
 ## Coverage Summary
 
-- Active requirements: 12
-- Mapped to slices: 12
-- Validated: 22 (from M001)
+- Active requirements: 10
+- Mapped to slices: 10
+- Validated: 24 (22 from M001, 2 from M002/S01)
 - Deferred: 2 (M003)
 - Out of scope: 2
 - Unmapped active requirements: 0

@@ -10,7 +10,7 @@ Point the CLI at real traffic data and get back actionable, risk-scored firewall
 
 ## Current State
 
-**M001 complete.** Full pipeline from VPC Flow Log ingestion through 5-stage LangGraph analysis to Rich terminal output and JSON export. AWS Security Group adapter, ReadOnlyAdapter safety enforcement, Terraform test infra, Docker packaging. 361 tests passing.
+**M001 complete. M002/S01 complete.** Full pipeline from VPC Flow Log ingestion through 5-stage LangGraph analysis to Rich terminal output and JSON export. AWS Security Group adapter, ReadOnlyAdapter safety enforcement, Terraform test infra, Docker packaging. Excel traffic ingestion with auto-detect column mapping now working — parses 83,633 rows from sample file with all 10 columns auto-detected. 415+ tests passing.
 
 ## Architecture / Key Patterns
 
@@ -35,4 +35,4 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 - [ ] **M003: Live Firewall Integration** — Query existing FW rules, compare against proposed rules, gap analysis on live policies (provisional)
 
 ---
-*Last updated: 2026-03-12 after M002 planning*
+*Last updated: 2026-03-15 after M002/S01 completion*

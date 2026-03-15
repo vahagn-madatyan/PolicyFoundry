@@ -45,6 +45,10 @@ class ParseError(IngestionError):
     """Line parsing failures during log ingestion."""
 
 
+class ExcelParseError(IngestionError):
+    """Excel file parsing and column detection errors."""
+
+
 class S3AccessError(IngestionError):
     """S3 access issues during log ingestion."""
 

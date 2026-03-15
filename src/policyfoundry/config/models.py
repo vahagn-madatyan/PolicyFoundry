@@ -69,6 +69,19 @@ class TargetsConfig(BaseModel):
         return v
 
 
+class ExcelConfig(BaseModel):
+    """Excel ingestion configuration.
+
+    Controls how Excel traffic exports are parsed. By default, auto-detects
+    columns from the first sheet's header row. Override column_mapping when
+    auto-detection fails for non-standard column names.
+    """
+
+    sheet_name: str | None = None  # default: first sheet
+    header_row: int = 1
+    column_mapping: dict[str, int] | None = None  # override for detect_columns
+
+
 class OutputConfig(BaseModel):
     """Output formatting configuration."""
 
@@ -93,6 +106,7 @@ class PolicyFoundryConfig(BaseSettings):
     sources: SourcesConfig = Field(default_factory=SourcesConfig)
     targets: TargetsConfig = Field(default_factory=TargetsConfig)
     output: OutputConfig = Field(default_factory=OutputConfig)
+    excel: ExcelConfig = Field(default_factory=ExcelConfig)
 
     @classmethod
     def settings_customise_sources(
