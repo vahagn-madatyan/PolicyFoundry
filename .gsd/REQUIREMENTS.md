@@ -6,41 +6,11 @@
 
 ### ~~R102~~ → Validated (see Validated section)
 
-### R103 — Traffic flow aggregation into connection tuples
+### ~~R103~~ → Validated (see Validated section)
 
-- Class: core-capability
-- Status: active
-- Description: Raw flows (potentially 80K+ rows) are collapsed into unique (source, destination, port, protocol) tuples with flow counts before AI analysis.
-- Why it matters: Sending 83K raw rows to an LLM is impractical. Pre-aggregation produces a manageable dataset (~600 tuples) that the AI can reason about.
-- Source: inferred
-- Primary owning slice: M002/S02
-- Supporting slices: none
-- Validation: unmapped
-- Notes: none
+### ~~R104~~ → Validated (see Validated section)
 
-### R104 — Direction inference from flags, interfaces, and port patterns
-
-- Class: core-capability
-- Status: active
-- Description: The tool determines traffic direction (inbound/outbound) from flag values (U/UI/UIO), interface zones (inet/zoneA), and well-known port analysis (low port = server side).
-- Why it matters: Direction is essential for writing correct firewall rules. The raw data doesn't have an explicit direction column — it must be inferred.
-- Source: user
-- Primary owning slice: M002/S02
-- Supporting slices: none
-- Validation: unmapped
-- Notes: Flags observed: U (16 flows), UI (1600 flows), UIO (82017 flows).
-
-### R105 — Subnet-based CIDR rule grouping from individual IPs
-
-- Class: core-capability
-- Status: active
-- Description: When many individual IPs in the same subnet show the same traffic pattern, the AI proposes a single CIDR-based rule (e.g. 10.195.228.0/24) rather than per-IP rules.
-- Why it matters: 133 individual IP rules are unmanageable. Subnet grouping produces practical, maintainable firewall rules.
-- Source: user
-- Primary owning slice: M002/S02
-- Supporting slices: M002/S03
-- Validation: unmapped
-- Notes: AI makes the final grouping decision; pre-processing provides subnet candidates.
+### ~~R105~~ → Validated (see Validated section)
 
 ### R106 — Multi-stage LangGraph pipeline for Excel traffic analysis
 

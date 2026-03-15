@@ -65,7 +65,7 @@ This milestone is complete only when all are true:
 - [x] **S01: Excel Ingestion & Column Auto-Detection** `risk:medium` `depends:[]`
   > After this: `policyfoundry analyze --source excel --file traffic.xlsx` parses the sample Excel, auto-detects all 10 columns, and prints a summary showing "Parsed 83,633 flows from 10 columns" with detected column mapping — verified by unit tests and CLI output.
 
-- [ ] **S02: Traffic Pre-Processing** `risk:medium` `depends:[S01]`
+- [x] **S02: Traffic Pre-Processing** `risk:medium` `depends:[S01]`
   > After this: 83K raw flows collapse into ~600 aggregated tuples with direction labels (inbound/outbound) and subnet grouping candidates (e.g. 133 IPs → 10.195.228.0/24) — verified by unit tests and Rich summary table displayed in terminal.
 
 - [ ] **S03: Analysis Pipeline** `risk:high` `depends:[S02]`

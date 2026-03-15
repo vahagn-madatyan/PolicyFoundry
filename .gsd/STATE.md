@@ -1,9 +1,9 @@
 # GSD State
 
 **Active Milestone:** M002 — Excel Traffic Analysis & Change Request Forms
-**Active Slice:** S02 — Traffic Pre-Processing
+**Active Slice:** S03 — Analysis Pipeline
 **Phase:** planning
-**Requirements Status:** 10 active · 24 validated · 2 deferred · 2 out of scope
+**Requirements Status:** 7 active · 24 validated · 2 deferred · 2 out of scope
 
 ## Milestone Registry
 - ✅ **M001:** PolicyFoundry MVP
@@ -16,4 +16,4 @@
 - None
 
 ## Next Action
-Plan slice S02 (Traffic Pre-Processing).
+Plan slice S03 (Analysis Pipeline).
