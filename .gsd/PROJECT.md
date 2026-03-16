@@ -2,7 +2,7 @@
 
 ## What This Is
 
-PolicyFoundry is an AI-powered firewall policy management CLI tool. It ingests network traffic data — AWS VPC Flow Logs or vendor-exported Excel traffic logs — analyzes patterns through multi-stage LangGraph pipelines, and produces justified firewall rule recommendations. Suggest-only mode; never modifies rules directly.
+PolicyFoundry is an AI-powered firewall policy management CLI tool. It ingests network traffic data — AWS VPC Flow Logs or vendor-exported Excel traffic logs — analyzes patterns through multi-stage LangGraph pipelines, and produces justified firewall rule recommendations with change request form exports. Suggest-only mode; never modifies rules directly.
 
 ## Core Value
 
@@ -10,18 +10,25 @@ Point the CLI at real traffic data and get back actionable, risk-scored firewall
 
 ## Current State
 
-**M001 complete. M002 complete (all 5 slices).** Full pipeline from VPC Flow Log ingestion through 5-stage LangGraph analysis to Rich terminal output and JSON export. AWS Security Group adapter, ReadOnlyAdapter safety enforcement, Terraform test infra, Docker packaging. Excel traffic ingestion with auto-detect column mapping. Traffic pre-processing aggregates flows with direction labels and subnet grouping. Excel analysis pipeline (5-stage LangGraph with NullAdapter) produces risk-scored rule proposals with AI-generated justifications. Complete CLI integration: `policyfoundry analyze --source excel --file traffic.xlsx --export xlsx,pdf` runs full pipeline and exports change request forms. 642 tests passing.
+**M001 complete. M002 complete.** Two fully functional analysis modes:
+
+1. **VPC Flow Log mode** (`--source local|s3`): Ingest AWS VPC Flow Logs → 5-stage LangGraph analysis → Rich terminal output and JSON export. AWS Security Group adapter, ReadOnlyAdapter safety enforcement.
+2. **Excel traffic mode** (`--source excel`): Ingest Excel traffic exports → auto-detect 10 columns → direction inference + flow aggregation (~603 tuples from 83K rows) + subnet grouping → 5-stage LangGraph pipeline with NullAdapter → Rich/JSON output → xlsx/pdf change request form export with custom template support.
+
+Infrastructure: Terraform test environment, Docker packaging. 623 tests passing (611 unit/integration + 12 e2e).
 
 ## Architecture / Key Patterns
 
 - **CLI**: Typer + Rich, sync commands with internal `asyncio.run()` (D027)
 - **Pipeline**: LangGraph StateGraph with PipelineContext DI — Analyze → Assess → Generate → Validate → Decide
-- **Excel Pipeline**: Separate LangGraph graph (D039) with pre-summarizer (D049), NullAdapter default (D040), inline flow data (D050)
+- **Two parallel pipelines**: VPC pipeline (DuckDB queries, data_dir) and Excel pipeline (inline flow data, pre-summarizer) — shared LLMClient, adapter interface, and Rich renderers
 - **LLM**: Instructor + LiteLLM for structured Pydantic output, dual retry (3x validation, 3x transient)
 - **Adapters**: FirewallAdapter ABC → AdapterRegistry plugin discovery → vendor adapters (AWS SG, NullAdapter)
-- **Ingestion**: Parser → Dedup → IngestionResult pattern. Local files, S3, and Excel
-- **Storage**: Parquet + zstd compression, DuckDB analytics queries
-- **Output**: Rich terminal formatter (shared renderers D048), JSON export, Excel/PDF change request forms (D053 fpdf2)
+- **Ingestion**: Parser → Dedup → IngestionResult pattern. Local files, S3, and Excel (synonym-based column auto-detect)
+- **Analysis**: Direction inference (4-signal heuristic), flow aggregation (ephemeral port exclusion), subnet grouping (/24 candidates)
+- **Storage**: Parquet + zstd compression, DuckDB analytics queries (VPC mode only)
+- **Output**: Rich terminal formatter (shared renderers D048), JSON export
+- **Export**: xlsx change request forms (default + custom template), PDF forms (fpdf2)
 - **Safety**: ReadOnlyAdapter wraps all adapter access, SafetyError on writes
 - **Config**: Pydantic Settings with YAML + env var merge, 4-layer priority
 
@@ -36,4 +43,4 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 - [ ] **M003: Live Firewall Integration** — Query existing FW rules, compare against proposed rules, gap analysis on live policies (provisional)
 
 ---
-*Last updated: 2026-03-15 after M002/S05 completion (M002 complete)*
+*Last updated: 2026-03-16 after M002 completion*

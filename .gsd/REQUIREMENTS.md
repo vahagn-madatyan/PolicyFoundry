@@ -52,6 +52,42 @@
 - Validation: validated
 - Notes: Verified by TestColumnMappingOverride tests proving config override works with both standard and non-standard headers. ExcelConfig nested in PolicyFoundryConfig.
 
+### R103 — Traffic flow aggregation
+
+- Class: core-capability
+- Status: validated
+- Description: Raw traffic flows are aggregated into unique tuples with flow counts, collapsing thousands of individual records into manageable groups for analysis.
+- Why it matters: Without aggregation, the pipeline would process 83K individual flows instead of ~600 meaningful tuples — exceeding LLM context limits and producing per-connection rules instead of grouped policies.
+- Source: user
+- Primary owning slice: M002/S02
+- Supporting slices: none
+- Validation: validated
+- Notes: Verified by 12 aggregation tests proving dedup, counting, service port keying, and ephemeral port exclusion. 83K raw flows collapse to ~603 aggregated tuples.
+
+### R104 — Direction inference
+
+- Class: core-capability
+- Status: validated
+- Description: The tool infers traffic direction (inbound/outbound) from flags, interfaces, and well-known port analysis using a multi-signal heuristic.
+- Why it matters: Direction determines source vs destination in firewall rules. Incorrect inference produces wrong rules. The vendor-specific flag values (U/UI/UIO) require careful interpretation.
+- Source: user
+- Primary owning slice: M002/S02
+- Supporting slices: none
+- Validation: validated
+- Notes: Verified by 27 parametrized direction inference tests covering all signal combinations (well-known port, interface zone, flag, both-ephemeral fallback). 4-signal heuristic with UNKNOWN fallback for ambiguous cases.
+
+### R105 — Subnet grouping
+
+- Class: core-capability
+- Status: validated
+- Description: Individual IP addresses sharing traffic patterns are grouped into CIDR subnets for more manageable firewall rules.
+- Why it matters: 133 individual IPs collapsing to subnet-based rules produces cleaner, more maintainable firewall policies.
+- Source: user
+- Primary owning slice: M002/S02
+- Supporting slices: M002/S03
+- Validation: validated
+- Notes: Verified by 13 subnet grouping tests proving /24 candidates, min 2 IPs, pattern matching, custom prefix lengths. Subnet candidates passed to LLM for final grouping decision (D042).
+
 ### R106 — Multi-stage LangGraph pipeline for Excel traffic analysis
 
 - Class: core-capability
@@ -430,9 +466,9 @@
 |---|---|---|---|---|---|
 | R101 | core-capability | validated | M002/S01 | none | validated |
 | R102 | core-capability | validated | M002/S01 | none | validated |
-| R103 | core-capability | active | M002/S02 | none | unmapped |
-| R104 | core-capability | active | M002/S02 | none | unmapped |
-| R105 | core-capability | active | M002/S02 | M002/S03 | unmapped |
+| R103 | core-capability | validated | M002/S02 | none | validated |
+| R104 | core-capability | validated | M002/S02 | none | validated |
+| R105 | core-capability | validated | M002/S02 | M002/S03 | validated |
 | R106 | core-capability | validated | M002/S03 | none | validated |
 | R107 | core-capability | validated | M002/S03 | M002/S04 | validated |
 | R108 | core-capability | validated | M002/S05 | none | validated |
@@ -469,9 +505,9 @@
 
 ## Coverage Summary
 
-- Active requirements: 3
-- Mapped to slices: 3
-- Validated: 31 (22 from M001, 2 from M002/S01, 3 from M002/S03, 3 from M002/S04, 1 from M002/S05)
+- Active requirements: 0
+- Mapped to slices: 0
+- Validated: 34 (22 from M001, 12 from M002)
 - Deferred: 2 (M003)
 - Out of scope: 2
 - Unmapped active requirements: 0
