@@ -16,17 +16,7 @@
 
 ### ~~R107~~ → Validated (see Validated section)
 
-### R108 — Rich terminal output showing proposed FW rules
-
-- Class: core-capability
-- Status: active
-- Description: Proposed firewall rules are displayed in the terminal as Rich tables with color-coded risk levels, source/dest/port details, and justification summaries.
-- Why it matters: The user needs to see and evaluate the suggestions before exporting.
-- Source: inferred
-- Primary owning slice: M002/S05
-- Supporting slices: none
-- Validation: unmapped
-- Notes: Extends the existing Rich output infrastructure from M001.
+### ~~R108~~ → Validated (see Validated section)
 
 ### ~~R109~~ → Validated (see Validated section)
 
@@ -85,6 +75,18 @@
 - Supporting slices: M002/S04
 - Validation: validated
 - Notes: Generate stage produces PolicyProposal with justification field; Decide stage assigns risk classification and action (CREATE/SKIP). Verified by mock LLM structured output tests.
+
+### R108 — Rich terminal output showing proposed FW rules
+
+- Class: core-capability
+- Status: validated
+- Description: Proposed firewall rules are displayed in the terminal as Rich tables with color-coded risk levels, source/dest/port details, and justification summaries.
+- Why it matters: The user needs to see and evaluate the suggestions before exporting.
+- Source: inferred
+- Primary owning slice: M002/S05
+- Supporting slices: none
+- Validation: validated
+- Notes: Verified by 4 CLI integration tests (exit code, pipeline summary panel, decisions section, token usage) + 2 end-to-end composition tests. Excel-specific summary panel with direction breakdown and subnet candidates, followed by shared renderers for analysis, proposals, decisions, and token usage.
 
 ### R109 — FW change request form export to Excel (.xlsx)
 
@@ -433,7 +435,7 @@
 | R105 | core-capability | active | M002/S02 | M002/S03 | unmapped |
 | R106 | core-capability | validated | M002/S03 | none | validated |
 | R107 | core-capability | validated | M002/S03 | M002/S04 | validated |
-| R108 | core-capability | active | M002/S05 | none | unmapped |
+| R108 | core-capability | validated | M002/S05 | none | validated |
 | R109 | core-capability | validated | M002/S04 | none | validated |
 | R110 | core-capability | validated | M002/S04 | none | validated |
 | R111 | core-capability | validated | M002/S04 | none | validated |
@@ -467,9 +469,9 @@
 
 ## Coverage Summary
 
-- Active requirements: 4
-- Mapped to slices: 4
-- Validated: 30 (22 from M001, 2 from M002/S01, 3 from M002/S03, 3 from M002/S04)
+- Active requirements: 3
+- Mapped to slices: 3
+- Validated: 31 (22 from M001, 2 from M002/S01, 3 from M002/S03, 3 from M002/S04, 1 from M002/S05)
 - Deferred: 2 (M003)
 - Out of scope: 2
 - Unmapped active requirements: 0

@@ -74,7 +74,7 @@ This milestone is complete only when all are true:
 - [x] **S04: Change Request Form Export** `risk:medium` `depends:[S03]`
   > After this: `--export xlsx` produces a filled Excel change request form and `--export pdf` produces a formatted PDF, both containing all proposed rules with source, dest, port, protocol, direction, action, justification, and risk. `--template custom.xlsx` fills a user-provided template.
 
-- [ ] **S05: CLI Integration & End-to-End** `risk:low` `depends:[S03, S04]`
+- [x] **S05: CLI Integration & End-to-End** `risk:low` `depends:[S03, S04]`
   > After this: Complete end-to-end: `policyfoundry analyze --source excel --file traffic.xlsx --export xlsx` produces both Rich terminal output and a filled change request form. Integration tests prove all layers compose. All success criteria re-verified.
 
 ## Boundary Map

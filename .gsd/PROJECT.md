@@ -10,7 +10,7 @@ Point the CLI at real traffic data and get back actionable, risk-scored firewall
 
 ## Current State
 
-**M001 complete. M002/S04 complete (4 of 5 slices).** Full pipeline from VPC Flow Log ingestion through 5-stage LangGraph analysis to Rich terminal output and JSON export. AWS Security Group adapter, ReadOnlyAdapter safety enforcement, Terraform test infra, Docker packaging. Excel traffic ingestion with auto-detect column mapping parses 83,633 rows. Traffic pre-processing aggregates 83K flows into ~600 tuples with direction labels and subnet grouping. Analysis pipeline (5-stage LangGraph with NullAdapter) produces risk-scored rule proposals with AI-generated justifications — Rich and JSON output formatters ready. Export package produces filled Excel change request forms (default styled or custom template) and formatted PDF documents from pipeline state. 586 tests passing.
+**M001 complete. M002 complete (all 5 slices).** Full pipeline from VPC Flow Log ingestion through 5-stage LangGraph analysis to Rich terminal output and JSON export. AWS Security Group adapter, ReadOnlyAdapter safety enforcement, Terraform test infra, Docker packaging. Excel traffic ingestion with auto-detect column mapping. Traffic pre-processing aggregates flows with direction labels and subnet grouping. Excel analysis pipeline (5-stage LangGraph with NullAdapter) produces risk-scored rule proposals with AI-generated justifications. Complete CLI integration: `policyfoundry analyze --source excel --file traffic.xlsx --export xlsx,pdf` runs full pipeline and exports change request forms. 642 tests passing.
 
 ## Architecture / Key Patterns
 
@@ -32,8 +32,8 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 ## Milestone Sequence
 
 - [x] **M001: PolicyFoundry MVP** — VPC Flow Log → LangGraph pipeline → Rich output with risk tables, JSON export, suggest-only safety, Terraform + Docker packaging
-- [ ] **M002: Excel Traffic Analysis & Change Request Forms** — Excel traffic log → multi-stage LangGraph pipeline → FW rule suggestions → Excel/PDF change request form export
+- [x] **M002: Excel Traffic Analysis & Change Request Forms** — Excel traffic log → multi-stage LangGraph pipeline → FW rule suggestions → Excel/PDF change request form export
 - [ ] **M003: Live Firewall Integration** — Query existing FW rules, compare against proposed rules, gap analysis on live policies (provisional)
 
 ---
-*Last updated: 2026-03-15 after M002/S04 completion*
+*Last updated: 2026-03-15 after M002/S05 completion (M002 complete)*
