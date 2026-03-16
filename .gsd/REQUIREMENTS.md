@@ -28,41 +28,11 @@
 - Validation: unmapped
 - Notes: Extends the existing Rich output infrastructure from M001.
 
-### R109 — FW change request form export to Excel (.xlsx)
+### ~~R109~~ → Validated (see Validated section)
 
-- Class: core-capability
-- Status: active
-- Description: User can export proposed rules as a filled-in Excel change request form with columns: source, destination, port, protocol, direction, action, justification, risk.
-- Why it matters: Excel is the standard format for submitting change requests to network/security teams.
-- Source: user
-- Primary owning slice: M002/S04
-- Supporting slices: none
-- Validation: unmapped
-- Notes: none
+### ~~R110~~ → Validated (see Validated section)
 
-### R110 — FW change request form export to PDF
-
-- Class: core-capability
-- Status: active
-- Description: User can export proposed rules as a formatted PDF change request document.
-- Why it matters: Some approval workflows require PDF documents rather than spreadsheets.
-- Source: user
-- Primary owning slice: M002/S04
-- Supporting slices: none
-- Validation: unmapped
-- Notes: none
-
-### R111 — Custom template support for change request forms
-
-- Class: core-capability
-- Status: active
-- Description: User can provide their own Excel template via `--template` flag. The tool fills in rule data into the template's structure rather than using the built-in default.
-- Why it matters: Every organization has their own change request form format. Custom templates let the tool fit into existing workflows.
-- Source: user
-- Primary owning slice: M002/S04
-- Supporting slices: none
-- Validation: unmapped
-- Notes: Built-in default template ships with the tool for users without a custom form.
+### ~~R111~~ → Validated (see Validated section)
 
 ### ~~R112~~ → Validated (see Validated section)
 
@@ -115,6 +85,42 @@
 - Supporting slices: M002/S04
 - Validation: validated
 - Notes: Generate stage produces PolicyProposal with justification field; Decide stage assigns risk classification and action (CREATE/SKIP). Verified by mock LLM structured output tests.
+
+### R109 — FW change request form export to Excel (.xlsx)
+
+- Class: core-capability
+- Status: validated
+- Description: User can export proposed rules as a filled-in Excel change request form with columns: source, destination, port, protocol, direction, action, justification, risk.
+- Why it matters: Excel is the standard format for submitting change requests to network/security teams.
+- Source: user
+- Primary owning slice: M002/S04
+- Supporting slices: none
+- Validation: validated
+- Notes: 11 tests verify default styled workbook (metadata rows 1-5, header row 6, data rows), custom template fill with case-insensitive column matching, empty proposals, and error handling.
+
+### R110 — FW change request form export to PDF
+
+- Class: core-capability
+- Status: validated
+- Description: User can export proposed rules as a formatted PDF change request document.
+- Why it matters: Some approval workflows require PDF documents rather than spreadsheets.
+- Source: user
+- Primary owning slice: M002/S04
+- Supporting slices: none
+- Validation: validated
+- Notes: 16 tests verify PDF structure (magic bytes), metadata header (title, date, run_id, source type, rule count), data rows (proposal IDs, actions, protocols), empty proposals ("No rules proposed."), and error handling with ExportError chaining.
+
+### R111 — Custom template support for change request forms
+
+- Class: core-capability
+- Status: validated
+- Description: User can provide their own Excel template via `--template` flag. The tool fills in rule data into the template's structure rather than using the built-in default.
+- Why it matters: Every organization has their own change request form format. Custom templates let the tool fit into existing workflows.
+- Source: user
+- Primary owning slice: M002/S04
+- Supporting slices: none
+- Validation: validated
+- Notes: 2 template tests verify case-insensitive header matching (COLUMN_MAP synonym dict) and data insertion below existing headers. Supports single-row headers in row 1; complex templates (merged cells) not supported.
 
 ### R112 — Flexible adapter interface for future FW rule querying
 
@@ -428,9 +434,9 @@
 | R106 | core-capability | validated | M002/S03 | none | validated |
 | R107 | core-capability | validated | M002/S03 | M002/S04 | validated |
 | R108 | core-capability | active | M002/S05 | none | unmapped |
-| R109 | core-capability | active | M002/S04 | none | unmapped |
-| R110 | core-capability | active | M002/S04 | none | unmapped |
-| R111 | core-capability | active | M002/S04 | none | unmapped |
+| R109 | core-capability | validated | M002/S04 | none | validated |
+| R110 | core-capability | validated | M002/S04 | none | validated |
+| R111 | core-capability | validated | M002/S04 | none | validated |
 | R112 | core-capability | validated | M002/S03 | none | validated |
 | R201 | core-capability | deferred | M003 | none | unmapped |
 | R202 | core-capability | deferred | M003 | none | unmapped |
@@ -461,9 +467,9 @@
 
 ## Coverage Summary
 
-- Active requirements: 7
-- Mapped to slices: 7
-- Validated: 27 (22 from M001, 2 from M002/S01, 3 from M002/S03)
+- Active requirements: 4
+- Mapped to slices: 4
+- Validated: 30 (22 from M001, 2 from M002/S01, 3 from M002/S03, 3 from M002/S04)
 - Deferred: 2 (M003)
 - Out of scope: 2
 - Unmapped active requirements: 0

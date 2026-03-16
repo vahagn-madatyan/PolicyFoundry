@@ -10,7 +10,7 @@ Point the CLI at real traffic data and get back actionable, risk-scored firewall
 
 ## Current State
 
-**M001 complete. M002/S03 complete (3 of 5 slices).** Full pipeline from VPC Flow Log ingestion through 5-stage LangGraph analysis to Rich terminal output and JSON export. AWS Security Group adapter, ReadOnlyAdapter safety enforcement, Terraform test infra, Docker packaging. Excel traffic ingestion with auto-detect column mapping parses 83,633 rows. Traffic pre-processing aggregates 83K flows into ~600 tuples with direction labels and subnet grouping. Analysis pipeline (5-stage LangGraph with NullAdapter) produces risk-scored rule proposals with AI-generated justifications — Rich and JSON output formatters ready. 564 tests passing.
+**M001 complete. M002/S04 complete (4 of 5 slices).** Full pipeline from VPC Flow Log ingestion through 5-stage LangGraph analysis to Rich terminal output and JSON export. AWS Security Group adapter, ReadOnlyAdapter safety enforcement, Terraform test infra, Docker packaging. Excel traffic ingestion with auto-detect column mapping parses 83,633 rows. Traffic pre-processing aggregates 83K flows into ~600 tuples with direction labels and subnet grouping. Analysis pipeline (5-stage LangGraph with NullAdapter) produces risk-scored rule proposals with AI-generated justifications — Rich and JSON output formatters ready. Export package produces filled Excel change request forms (default styled or custom template) and formatted PDF documents from pipeline state. 586 tests passing.
 
 ## Architecture / Key Patterns
 
@@ -21,7 +21,7 @@ Point the CLI at real traffic data and get back actionable, risk-scored firewall
 - **Adapters**: FirewallAdapter ABC → AdapterRegistry plugin discovery → vendor adapters (AWS SG, NullAdapter)
 - **Ingestion**: Parser → Dedup → IngestionResult pattern. Local files, S3, and Excel
 - **Storage**: Parquet + zstd compression, DuckDB analytics queries
-- **Output**: Rich terminal formatter (shared renderers D048), JSON export, (M002) Excel/PDF change request forms
+- **Output**: Rich terminal formatter (shared renderers D048), JSON export, Excel/PDF change request forms (D053 fpdf2)
 - **Safety**: ReadOnlyAdapter wraps all adapter access, SafetyError on writes
 - **Config**: Pydantic Settings with YAML + env var merge, 4-layer priority
 
@@ -36,4 +36,4 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 - [ ] **M003: Live Firewall Integration** — Query existing FW rules, compare against proposed rules, gap analysis on live policies (provisional)
 
 ---
-*Last updated: 2026-03-15 after M002/S03 completion*
+*Last updated: 2026-03-15 after M002/S04 completion*

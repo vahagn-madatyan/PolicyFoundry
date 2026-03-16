@@ -1,9 +1,9 @@
 # GSD State
 
 **Active Milestone:** M002 — Excel Traffic Analysis & Change Request Forms
-**Active Slice:** S04 — Change Request Form Export
+**Active Slice:** S05 — CLI Integration & End-to-End
 **Phase:** planning
-**Requirements Status:** 4 active · 27 validated · 2 deferred · 2 out of scope
+**Requirements Status:** 1 active · 30 validated · 2 deferred · 2 out of scope
 
 ## Milestone Registry
 - ✅ **M001:** PolicyFoundry MVP
@@ -16,4 +16,4 @@
 - None
 
 ## Next Action
-Plan slice S04 (Change Request Form Export).
+Plan slice S05 (CLI Integration & End-to-End).

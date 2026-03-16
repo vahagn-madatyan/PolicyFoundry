@@ -71,7 +71,7 @@ This milestone is complete only when all are true:
 - [x] **S03: Analysis Pipeline** `risk:high` `depends:[S02]`
   > After this: Full LangGraph pipeline (Analyze → Assess → Generate → Validate → Decide) produces risk-scored FW rule proposals with AI-generated justifications from Excel traffic data — displayed as Rich terminal report with token usage footer. NullAdapter handles no-FW mode.
 
-- [ ] **S04: Change Request Form Export** `risk:medium` `depends:[S03]`
+- [x] **S04: Change Request Form Export** `risk:medium` `depends:[S03]`
   > After this: `--export xlsx` produces a filled Excel change request form and `--export pdf` produces a formatted PDF, both containing all proposed rules with source, dest, port, protocol, direction, action, justification, and risk. `--template custom.xlsx` fills a user-provided template.
 
 - [ ] **S05: CLI Integration & End-to-End** `risk:low` `depends:[S03, S04]`
