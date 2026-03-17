@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
 
+from policyfoundry.exceptions import PipelineError
 from policyfoundry.pipeline.excel_prompts.generate import (
     EXCEL_GENERATE_SYSTEM_PROMPT,
     format_excel_generate_user_message,
@@ -49,33 +50,38 @@ async def excel_generate_stage(
         Dict with ``proposals`` (list of PolicyProposal dicts) and
         ``current_stage`` set to ``"generate"``.
     """
-    ctx = runtime.context
-    assessment = state.get("assessment", {})
-    analysis = state.get("analysis", {})
-    subnet_groups = state.get("subnet_groups", [])
+    try:
+        ctx = runtime.context
+        assessment = state.get("assessment", {})
+        analysis = state.get("analysis", {})
+        subnet_groups = state.get("subnet_groups", [])
 
-    # Get adapter capabilities
-    capabilities = ctx.adapter.capabilities()
+        # Get adapter capabilities
+        capabilities = ctx.adapter.capabilities()
 
-    # Format user message with subnet group data
-    user_message = format_excel_generate_user_message(
-        assessment, capabilities, analysis, subnet_groups,
-    )
+        # Format user message with subnet group data
+        user_message = format_excel_generate_user_message(
+            assessment, capabilities, analysis, subnet_groups,
+        )
 
-    messages: list[dict[str, str]] = [
-        {"role": "system", "content": EXCEL_GENERATE_SYSTEM_PROMPT},
-        {"role": "user", "content": user_message},
-    ]
+        messages: list[dict[str, str]] = [
+            {"role": "system", "content": EXCEL_GENERATE_SYSTEM_PROMPT},
+            {"role": "user", "content": user_message},
+        ]
 
-    # Call LLM with wrapper model for list output (D025: temperature=0.3)
-    result = await ctx.llm_client.complete(
-        messages, PolicyProposalList, temperature=0.3, stage="generate",
-    )
+        # Call LLM with wrapper model for list output (D025: temperature=0.3)
+        result = await ctx.llm_client.complete(
+            messages, PolicyProposalList, temperature=0.3, stage="generate",
+        )
 
-    # Limit and serialize proposals
-    proposals = result.proposals[:_MAX_PROPOSALS]
+        # Limit and serialize proposals
+        proposals = result.proposals[:_MAX_PROPOSALS]
 
-    return {
-        "proposals": [p.model_dump() for p in proposals],
-        "current_stage": "generate",
-    }
+        return {
+            "proposals": [p.model_dump() for p in proposals],
+            "current_stage": "generate",
+        }
+    except PipelineError:
+        raise
+    except Exception as e:
+        raise PipelineError(str(e), details={"stage": "generate"}) from e

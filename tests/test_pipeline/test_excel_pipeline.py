@@ -375,7 +375,7 @@ class TestRunExcelPipelineErrorHandling:
         self,
         sample_excel_records: list[ExcelTrafficRecord],
     ) -> None:
-        """Non-PipelineError exceptions are wrapped with PIPELINE_STAGE_FAILED."""
+        """Non-PipelineError exceptions are wrapped in PipelineError with stage."""
         from policyfoundry.pipeline.excel_runner import run_excel_pipeline
         from policyfoundry.pipeline.llm import LLMClient
 
@@ -385,5 +385,7 @@ class TestRunExcelPipelineErrorHandling:
         with pytest.raises(PipelineError) as exc_info:
             await run_excel_pipeline(llm, sample_excel_records)
 
-        assert exc_info.value.error_code == "PIPELINE_STAGE_FAILED"
+        # Stage-level wrapping catches first, so error_code is None
+        # but details["stage"] carries the stage that failed
+        assert exc_info.value.details.get("stage") == "analyze"
         assert exc_info.value.__cause__ is not None
