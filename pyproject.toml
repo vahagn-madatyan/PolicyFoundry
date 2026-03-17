@@ -21,10 +21,6 @@ classifiers = [
     "Topic :: System :: Networking :: Firewalls",
 ]
 
-[project.urls]
-Homepage = "https://github.com/vahagn-madatyan/PolicyFoundry"
-Repository = "https://github.com/vahagn-madatyan/PolicyFoundry"
-Issues = "https://github.com/vahagn-madatyan/PolicyFoundry/issues"
 dependencies = [
     "aiofiles>=25.1.0",
     "boto3>=1.40.61",
@@ -40,6 +36,11 @@ dependencies = [
     "rich>=14.0",
     "typer>=0.24.1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/vahagn-madatyan/PolicyFoundry"
+Repository = "https://github.com/vahagn-madatyan/PolicyFoundry"
+Issues = "https://github.com/vahagn-madatyan/PolicyFoundry/issues"
 
 [project.scripts]
 policyfoundry = "policyfoundry.__main__:main"
