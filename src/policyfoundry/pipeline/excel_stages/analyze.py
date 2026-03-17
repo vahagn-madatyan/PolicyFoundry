@@ -67,7 +67,7 @@ async def excel_analyze_stage(
 
     # Call LLM with structured output
     analysis: TrafficAnalysis = await ctx.llm_client.complete(
-        messages, TrafficAnalysis, temperature=0.1,
+        messages, TrafficAnalysis, temperature=0.1, stage="analyze",
     )
 
     return {

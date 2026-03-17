@@ -56,7 +56,7 @@ async def generate_stage(state: PipelineState, runtime: Runtime[PipelineContext]
 
     # Call LLM with wrapper model for list output
     result = await ctx.llm_client.complete(
-        messages, PolicyProposalList, temperature=0.3,
+        messages, PolicyProposalList, temperature=0.3, stage="generate",
     )
 
     # Limit and serialize proposals

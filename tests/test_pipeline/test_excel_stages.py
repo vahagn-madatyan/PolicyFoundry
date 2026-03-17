@@ -224,6 +224,7 @@ class TestExcelAnalyzeStage:
         call_args = mock_llm_client.complete.call_args
         assert call_args[0][1] is TrafficAnalysis
         assert call_args[1]["temperature"] == 0.1
+        assert call_args[1]["stage"] == "analyze"
 
     async def test_prompt_mentions_excel_traffic_export(
         self,
@@ -431,6 +432,7 @@ class TestExcelAssessStage:
         call_args = mock_llm_client.complete.call_args
         assert call_args[0][1] is SecurityAssessment
         assert call_args[1]["temperature"] == 0.1
+        assert call_args[1]["stage"] == "assess"
 
     async def test_calls_adapter_get_rules(
         self,
@@ -756,6 +758,7 @@ class TestExcelGenerateStage:
 
         call_args = mock_llm_client.complete.call_args
         assert call_args[1]["temperature"] == 0.3
+        assert call_args[1]["stage"] == "generate"
 
     async def test_subnet_groups_passed_in_prompt(
         self,
@@ -1042,6 +1045,7 @@ class TestExcelDecideStage:
         call_args = mock_llm_client.complete.call_args
         assert call_args[0][1] is RuleDecisionList
         assert call_args[1]["temperature"] == 0.1
+        assert call_args[1]["stage"] == "decide"
 
     async def test_decide_prompt_is_excel_aware(
         self,

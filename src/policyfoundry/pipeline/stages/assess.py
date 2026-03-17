@@ -45,7 +45,7 @@ async def assess_stage(state: PipelineState, runtime: Runtime[PipelineContext]) 
 
     # Call LLM with structured output
     assessment = await ctx.llm_client.complete(
-        messages, SecurityAssessment, temperature=0.1,
+        messages, SecurityAssessment, temperature=0.1, stage="assess",
     )
 
     return {

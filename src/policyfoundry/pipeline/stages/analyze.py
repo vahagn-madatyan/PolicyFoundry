@@ -54,7 +54,7 @@ async def analyze_stage(state: PipelineState, runtime: Runtime[PipelineContext])
 
     # Call LLM with structured output
     analysis = await ctx.llm_client.complete(
-        messages, TrafficAnalysis, temperature=0.1,
+        messages, TrafficAnalysis, temperature=0.1, stage="analyze",
     )
 
     return {

@@ -55,7 +55,7 @@ async def decide_stage(state: PipelineState, runtime: Runtime[PipelineContext]) 
 
     # Call LLM with wrapper model for list output
     result = await ctx.llm_client.complete(
-        messages, RuleDecisionList, temperature=0.1,
+        messages, RuleDecisionList, temperature=0.1, stage="decide",
     )
 
     return {

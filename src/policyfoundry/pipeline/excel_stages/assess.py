@@ -79,7 +79,7 @@ async def excel_assess_stage(
 
     # Call LLM with structured output
     assessment: SecurityAssessment = await ctx.llm_client.complete(
-        messages, SecurityAssessment, temperature=0.1,
+        messages, SecurityAssessment, temperature=0.1, stage="assess",
     )
 
     return {

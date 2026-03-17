@@ -32,7 +32,7 @@
 
 ## Tasks
 
-- [ ] **T01: Add stage identity to all LLM calls and fix runner error handlers** `est:45m`
+- [x] **T01: Add stage identity to all LLM calls and fix runner error handlers** `est:45m`
   - Why: Without `stage=`, all token usage shows as "unknown" (R404). Without the runner fix, all errors report stage "starting" (R403). These are the two highest-value fixes and share the "stage identity" theme.
   - Files: `src/policyfoundry/pipeline/excel_stages/analyze.py`, `assess.py`, `generate.py`, `decide.py`, `src/policyfoundry/pipeline/stages/analyze.py`, `assess.py`, `generate.py`, `decide.py`, `src/policyfoundry/pipeline/excel_runner.py`, `src/policyfoundry/pipeline/runner.py`, `tests/test_pipeline/test_excel_stages.py`, `tests/test_pipeline/test_stages.py`, `tests/test_pipeline/test_excel_runner.py`, `tests/test_pipeline/test_runner.py`
   - Do: Add `stage="<name>"` kwarg to all 8 `complete()` calls. Fix both runners' error handlers to extract stage from caught exception (`PipelineError.details.get("stage")` if available, else `"unknown"`) instead of reading `initial_state.get("current_stage")`. Add/update tests asserting `stage=` is passed in `call_args` for each stage. Add runner tests that mock `ainvoke` to raise `PipelineError` with stage details and assert the re-raised error contains the correct stage (not `"starting"`).

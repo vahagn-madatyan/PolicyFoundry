@@ -69,7 +69,7 @@ async def excel_generate_stage(
 
     # Call LLM with wrapper model for list output (D025: temperature=0.3)
     result = await ctx.llm_client.complete(
-        messages, PolicyProposalList, temperature=0.3,
+        messages, PolicyProposalList, temperature=0.3, stage="generate",
     )
 
     # Limit and serialize proposals

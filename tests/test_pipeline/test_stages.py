@@ -86,6 +86,7 @@ class TestAnalyzeStage:
             call_args = _mock_runtime.context.llm_client.complete.call_args
             assert call_args[0][1] is TrafficAnalysis
             assert call_args[1]["temperature"] == 0.1
+            assert call_args[1]["stage"] == "analyze"
 
     async def test_analyze_stage_returns_analysis_dict(
         self,
@@ -272,6 +273,7 @@ class TestAssessStage:
         _mock_runtime.context.llm_client.complete.assert_called_once()
         call_args = _mock_runtime.context.llm_client.complete.call_args
         assert call_args[0][1] is SecurityAssessment
+        assert call_args[1]["stage"] == "assess"
 
     async def test_assess_stage_reads_analysis_from_state(
         self,
@@ -385,6 +387,8 @@ class TestGenerateStage:
         await generate_stage(_mock_state, _mock_runtime)
 
         _mock_runtime.context.llm_client.complete.assert_called_once()
+        call_args = _mock_runtime.context.llm_client.complete.call_args
+        assert call_args[1]["stage"] == "generate"
 
     async def test_generate_stage_returns_proposals_list(
         self,
@@ -600,6 +604,7 @@ class TestDecideStage:
         _mock_runtime.context.llm_client.complete.assert_called_once()
         call_args = _mock_runtime.context.llm_client.complete.call_args
         assert call_args[1]["temperature"] == 0.1
+        assert call_args[1]["stage"] == "decide"
 
     async def test_decide_stage_returns_decisions_list(
         self,

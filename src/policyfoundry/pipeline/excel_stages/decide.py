@@ -66,7 +66,7 @@ async def excel_decide_stage(
 
     # Call LLM with wrapper model for list output (temperature=0.1)
     result = await ctx.llm_client.complete(
-        messages, RuleDecisionList, temperature=0.1,
+        messages, RuleDecisionList, temperature=0.1, stage="decide",
     )
 
     return {
