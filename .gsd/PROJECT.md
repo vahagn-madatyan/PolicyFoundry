@@ -17,6 +17,8 @@ Point the CLI at real traffic data and get back actionable, risk-scored firewall
 
 Infrastructure: Terraform test environment, Docker packaging. 623 tests passing (611 unit/integration + 12 e2e).
 
+**M002 PR review identified 14 issues (4 critical + 10 important)** — silent failures, prompt errors, wrong stage reporting, missing token tracking, type safety gaps. M003 addresses these before adding new capability.
+
 ## Architecture / Key Patterns
 
 - **CLI**: Typer + Rich, sync commands with internal `asyncio.run()` (D027)
@@ -40,7 +42,5 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 
 - [x] **M001: PolicyFoundry MVP** — VPC Flow Log → LangGraph pipeline → Rich output with risk tables, JSON export, suggest-only safety, Terraform + Docker packaging
 - [x] **M002: Excel Traffic Analysis & Change Request Forms** — Excel traffic log → multi-stage LangGraph pipeline → FW rule suggestions → Excel/PDF change request form export
-- [ ] **M003: Live Firewall Integration** — Query existing FW rules, compare against proposed rules, gap analysis on live policies (provisional)
-
----
-*Last updated: 2026-03-16 after M002 completion*
+- [ ] **M003-2heki1: PR Review Bug Fixes** — Fix 14 critical + important issues from M002 PR review: pipeline correctness, silent failure elimination, type safety
+- [ ] **M004: Secrets Management** — .env file support, OS credential store (macOS Keychain / Windows Credential Manager), `policyfoundry secret` CLI commands
