@@ -34,6 +34,13 @@ Two type safety fixes. First, add a `DecisionAction` StrEnum to replace the bare
 - `pytest tests/test_analysis/test_models.py -v` — validator tests pass
 - `pytest --tb=short -q` — 623+ tests, zero failures
 
+## Observability Impact
+
+- **New failure signal:** `RuleDecision(action="BOGUS", ...)` now raises `ValidationError` instead of silently accepting. Any pipeline code constructing `RuleDecision` with a typo'd action will fail fast with a clear enum-validation message.
+- **New failure signal:** `SubnetGroup` with `member_count != len(member_ips)` raises `ValueError` via `model_validator`. Error message includes both values for diagnosis.
+- **Inspection surface:** `DecisionAction.__members__` enumerates valid actions. `list(DecisionAction)` returns `["CREATE", "SKIP", "UPDATE"]`.
+- **No log/metric changes** — these are Pydantic model constraints, not runtime instrumentation.
+
 ## Inputs
 
 - `src/policyfoundry/pipeline/schema.py` — `RuleDecision` model with `action: str` on line 46

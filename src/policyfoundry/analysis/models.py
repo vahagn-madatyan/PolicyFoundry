@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class DirectionLabel(StrEnum):
@@ -68,3 +68,15 @@ class SubnetGroup(BaseModel):
     member_ips: list[str]
     member_count: int = Field(ge=2)
     shared_patterns: list[dict[str, str | int]]
+
+    @model_validator(mode="after")
+    def _check_member_count_consistency(self) -> SubnetGroup:
+        """Ensure member_count matches the actual number of member IPs."""
+        actual = len(self.member_ips)
+        if self.member_count != actual:
+            msg = (
+                f"member_count ({self.member_count}) does not match "
+                f"len(member_ips) ({actual})"
+            )
+            raise ValueError(msg)
+        return self

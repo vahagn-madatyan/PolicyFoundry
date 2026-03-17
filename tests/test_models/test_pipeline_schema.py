@@ -6,6 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 from policyfoundry.pipeline.schema import (
+    DecisionAction,
     PolicyProposal,
     RuleDecision,
     SecurityAssessment,
@@ -185,3 +186,57 @@ def test_rule_decision_defaults() -> None:
         reason="High risk requires review",
     )
     assert rd.approval_required is True
+
+
+# ---------------------------------------------------------------------------
+# DecisionAction enum
+# ---------------------------------------------------------------------------
+
+
+class TestDecisionAction:
+    """DecisionAction StrEnum tests."""
+
+    @pytest.mark.parametrize("value", ["CREATE", "SKIP", "UPDATE"])
+    def test_valid_members(self, value: str) -> None:
+        """DecisionAction accepts valid action strings."""
+        action = DecisionAction(value)
+        assert action == value
+        assert isinstance(action, str)
+
+    def test_is_strenum(self) -> None:
+        """DecisionAction is a StrEnum — critical for Instructor compat."""
+        assert issubclass(DecisionAction, str)
+        assert DecisionAction.CREATE.upper() == "CREATE"
+
+    def test_invalid_action_rejected(self) -> None:
+        """DecisionAction rejects unknown action strings."""
+        with pytest.raises(ValueError):
+            DecisionAction("INVALID")
+
+
+class TestRuleDecisionEnum:
+    """RuleDecision validates action against DecisionAction enum."""
+
+    _base: dict[str, Any] = {
+        "decision_id": "dec-001",
+        "proposal_id": "prop-001",
+        "risk_level": "LOW",
+        "reason": "test",
+    }
+
+    def test_valid_action_accepted(self) -> None:
+        """RuleDecision accepts a valid DecisionAction string."""
+        rd = RuleDecision(**{**self._base, "action": "CREATE"})
+        assert rd.action == DecisionAction.CREATE
+        assert isinstance(rd.action, DecisionAction)
+
+    def test_invalid_action_rejected(self) -> None:
+        """RuleDecision rejects an action string not in the enum."""
+        with pytest.raises(ValidationError):
+            RuleDecision(**{**self._base, "action": "INVALID"})
+
+    @pytest.mark.parametrize("action", ["CREATE", "SKIP", "UPDATE"])
+    def test_all_actions_accepted(self, action: str) -> None:
+        """RuleDecision accepts all three DecisionAction values."""
+        rd = RuleDecision(**{**self._base, "action": action})
+        assert rd.action == action

@@ -1,8 +1,23 @@
 """Pipeline LLM output models for traffic analysis and policy generation."""
 
+from enum import StrEnum
+
 from pydantic import BaseModel, Field
 
 from policyfoundry.adapters.schema import RiskLevel, UniversalRule
+
+
+class DecisionAction(StrEnum):
+    """Valid actions for a rule decision.
+
+    Uses ``StrEnum`` so values serialize as plain strings — critical for
+    Instructor structured-output compatibility and downstream ``.upper()``
+    comparisons.
+    """
+
+    CREATE = "CREATE"
+    SKIP = "SKIP"
+    UPDATE = "UPDATE"
 
 
 class TrafficAnalysis(BaseModel):
@@ -43,7 +58,7 @@ class RuleDecision(BaseModel):
 
     decision_id: str
     proposal_id: str
-    action: str
+    action: DecisionAction
     risk_level: RiskLevel
     reason: str
     approval_required: bool = True

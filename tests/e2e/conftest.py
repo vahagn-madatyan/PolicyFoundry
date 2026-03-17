@@ -129,7 +129,7 @@ _DECISIONS = RuleDecisionList(
         RuleDecision(
             decision_id="DEC-001",
             proposal_id="PROP-001",
-            action="APPROVE",
+            action="CREATE",
             risk_level="LOW",
             reason="Low risk SSH deny rule targeting known probing source.",
             approval_required=False,
@@ -137,7 +137,7 @@ _DECISIONS = RuleDecisionList(
         RuleDecision(
             decision_id="DEC-002",
             proposal_id="PROP-002",
-            action="APPROVE",
+            action="CREATE",
             risk_level="LOW",
             reason="Low risk SMB deny rule for external network.",
             approval_required=False,

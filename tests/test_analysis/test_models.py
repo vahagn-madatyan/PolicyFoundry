@@ -178,3 +178,24 @@ class TestSubnetGroup:
             shared_patterns=[],
         )
         assert sg.shared_patterns == []
+
+    def test_member_count_consistency_valid(self) -> None:
+        """SubnetGroup accepts matching member_count and member_ips length."""
+        sg = SubnetGroup(
+            cidr="10.0.0.0/24",
+            member_ips=["10.0.0.1", "10.0.0.2", "10.0.0.3"],
+            member_count=3,
+            shared_patterns=[{"dst_ip": "1.2.3.4", "service_port": 443, "protocol": "TCP"}],
+        )
+        assert sg.member_count == 3
+        assert len(sg.member_ips) == 3
+
+    def test_member_count_mismatch_rejected(self) -> None:
+        """SubnetGroup rejects member_count that doesn't match member_ips length."""
+        with pytest.raises(ValidationError, match="member_count"):
+            SubnetGroup(
+                cidr="10.0.0.0/24",
+                member_ips=["10.0.0.1", "10.0.0.2", "10.0.0.3"],
+                member_count=5,
+                shared_patterns=[],
+            )

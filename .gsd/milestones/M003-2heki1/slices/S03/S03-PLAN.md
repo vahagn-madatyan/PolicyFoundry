@@ -20,7 +20,7 @@
 
 ## Tasks
 
-- [ ] **T01: Add DecisionAction enum and SubnetGroup consistency validator** `est:30m`
+- [x] **T01: Add DecisionAction enum and SubnetGroup consistency validator** `est:30m`
   - Why: R406 — bare string on `RuleDecision.action` allows typos that silently change control flow; `SubnetGroup.member_count` can diverge from actual `member_ips` length
   - Files: `src/policyfoundry/pipeline/schema.py`, `src/policyfoundry/analysis/models.py`, `tests/test_models/test_pipeline_schema.py`, `tests/test_analysis/test_models.py`
   - Do: (1) Add `DecisionAction(StrEnum)` with `CREATE`, `SKIP`, `UPDATE` in `schema.py`. Change `action: str` to `action: DecisionAction`. (2) Add `@model_validator(mode="after")` on `SubnetGroup` enforcing `member_count == len(member_ips)`. (3) Add targeted tests: enum rejects invalid strings, enum accepts valid strings (including lowercase via StrEnum), validator rejects mismatched count, validator passes when consistent. Must use `StrEnum` (not plain `Enum`) to preserve string serialization compat with Instructor and `.upper()` comparisons downstream.
@@ -33,6 +33,13 @@
   - Do: (1) Replace `dict[str, Any](usage_raw)` with `dict(usage_raw)` on lines 157 and 238 of `output/models.py` — preserve the type annotation on the left side. (2) Replace the dedup block (lines 53–65) in `analysis/subnet.py` with a seen-set on `(cidr, frozenset(member_ips))` — append only if key is novel. (3) Add targeted test for dedup: construct input where old logic would drop a group with a novel member set but a shared pattern, verify the simplified logic keeps it.
   - Verify: `pytest tests/test_output/test_models.py tests/test_analysis/test_subnet.py -v && pytest --tb=short -q`
   - Done when: dict construction is standard, dedup test passes, full suite 623+ tests pass with zero regressions
+
+## Observability / Diagnostics
+
+- **Validation errors surface as `ValidationError`** — both `DecisionAction` enum rejection and `SubnetGroup` consistency check produce Pydantic `ValidationError` with descriptive messages. These propagate through Instructor structured output and pipeline orchestration unchanged.
+- **Enum serialization** — `DecisionAction` is `StrEnum`, so `model_dump()` / JSON serialization produces plain strings (`"CREATE"`, `"SKIP"`, `"UPDATE"`). Downstream code calling `.upper()` on the action value continues to work transparently.
+- **Inspection** — `DecisionAction.__members__` lists valid actions. `SubnetGroup` validator error messages include both `member_count` and actual `len(member_ips)` for easy diagnosis.
+- **No secrets or PII** in any of these models — no redaction constraints.
 
 ## Files Likely Touched
 
