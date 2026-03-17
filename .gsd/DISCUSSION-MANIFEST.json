@@ -1,9 +1,0 @@
-{
-  "primary": "M003-2heki1",
-  "milestones": {
-    "M003-2heki1": { "gate": "discussed", "context": "full" },
-    "M004-devsd8": { "gate": "drafted", "context": "draft" }
-  },
-  "total": 2,
-  "gates_completed": 2
-}
