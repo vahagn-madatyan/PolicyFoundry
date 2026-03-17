@@ -231,3 +231,12 @@ vendor/
 coverage/
 .cache/
 tmp/
+.policyfoundry.yaml
+
+# ── GSD baseline (auto-generated) ──
+.gsd/forensics/
+.gsd/completed-units.json
+.gsd/gsd.db
+.gsd/DISCUSSION-MANIFEST.json
+.gsd/milestones/**/*-CONTINUE.md
+.gsd/milestones/**/continue.md

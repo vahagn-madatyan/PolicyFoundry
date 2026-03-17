@@ -39,6 +39,10 @@ from tenacity import (
 from policyfoundry.exceptions import PipelineError
 from policyfoundry.output.models import TokenUsage
 
+# Allow LiteLLM to silently drop params unsupported by the target model
+# (e.g. temperature for reasoning models like gpt-5/o1/o3).
+litellm.drop_params = True
+
 if TYPE_CHECKING:
     from policyfoundry.config.models import LLMConfig
 

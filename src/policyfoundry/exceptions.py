@@ -92,3 +92,7 @@ class SafetyError(PolicyFoundryError):
 
 class OutputError(PolicyFoundryError):
     """Output formatting and rendering errors."""
+
+
+class ExportError(PolicyFoundryError):
+    """Export generation errors (xlsx, pdf)."""

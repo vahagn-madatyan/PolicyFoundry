@@ -1,3 +1,0 @@
-{"type":"model_change","id":"de84fdd1","parentId":null,"timestamp":"2026-03-12T05:27:43.179Z","provider":"anthropic","modelId":"claude-opus-4-6"}
-{"type":"thinking_level_change","id":"0f4c7186","parentId":"de84fdd1","timestamp":"2026-03-12T05:27:43.179Z","thinkingLevel":"xhigh"}
-{"type":"model_change","id":"9fb7193b","parentId":"0f4c7186","timestamp":"2026-03-12T05:47:14.032Z","provider":"anthropic","modelId":"claude-opus-4-6"}

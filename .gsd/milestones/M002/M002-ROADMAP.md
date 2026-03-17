@@ -65,16 +65,16 @@ This milestone is complete only when all are true:
 - [x] **S01: Excel Ingestion & Column Auto-Detection** `risk:medium` `depends:[]`
   > After this: `policyfoundry analyze --source excel --file traffic.xlsx` parses the sample Excel, auto-detects all 10 columns, and prints a summary showing "Parsed 83,633 flows from 10 columns" with detected column mapping — verified by unit tests and CLI output.
 
-- [ ] **S02: Traffic Pre-Processing** `risk:medium` `depends:[S01]`
+- [x] **S02: Traffic Pre-Processing** `risk:medium` `depends:[S01]`
   > After this: 83K raw flows collapse into ~600 aggregated tuples with direction labels (inbound/outbound) and subnet grouping candidates (e.g. 133 IPs → 10.195.228.0/24) — verified by unit tests and Rich summary table displayed in terminal.
 
-- [ ] **S03: Analysis Pipeline** `risk:high` `depends:[S02]`
+- [x] **S03: Analysis Pipeline** `risk:high` `depends:[S02]`
   > After this: Full LangGraph pipeline (Analyze → Assess → Generate → Validate → Decide) produces risk-scored FW rule proposals with AI-generated justifications from Excel traffic data — displayed as Rich terminal report with token usage footer. NullAdapter handles no-FW mode.
 
-- [ ] **S04: Change Request Form Export** `risk:medium` `depends:[S03]`
+- [x] **S04: Change Request Form Export** `risk:medium` `depends:[S03]`
   > After this: `--export xlsx` produces a filled Excel change request form and `--export pdf` produces a formatted PDF, both containing all proposed rules with source, dest, port, protocol, direction, action, justification, and risk. `--template custom.xlsx` fills a user-provided template.
 
-- [ ] **S05: CLI Integration & End-to-End** `risk:low` `depends:[S03, S04]`
+- [x] **S05: CLI Integration & End-to-End** `risk:low` `depends:[S03, S04]`
   > After this: Complete end-to-end: `policyfoundry analyze --source excel --file traffic.xlsx --export xlsx` produces both Rich terminal output and a filled change request form. Integration tests prove all layers compose. All success criteria re-verified.
 
 ## Boundary Map

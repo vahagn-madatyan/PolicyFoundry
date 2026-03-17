@@ -29,8 +29,12 @@ from policyfoundry.adapters.registry import AdapterRegistry
 from policyfoundry.adapters.safety import ReadOnlyAdapter
 from policyfoundry.config.loader import load_config
 from policyfoundry.exceptions import PolicyFoundryError
+from policyfoundry.export.change_request import export_pdf, export_xlsx
+from policyfoundry.output.excel_json_output import format_excel_json
+from policyfoundry.output.excel_rich_output import format_excel_rich
 from policyfoundry.output.json_output import format_json
 from policyfoundry.output.rich_output import format_rich
+from policyfoundry.pipeline.excel_runner import run_excel_pipeline
 from policyfoundry.pipeline.llm import create_llm_client
 from policyfoundry.pipeline.runner import run_pipeline
 
@@ -110,15 +114,20 @@ def main_callback(
         )
 
 
-def _run_excel_ingestion(
+def _run_excel_analyze(
     file_path: Path,
     cfg: "PolicyFoundryConfig",
     output_format: str,
+    export_format: str | None,
+    template_path: Path | None,
 ) -> None:
-    """Handle --source excel: parse file and print summary.
+    """Handle --source excel: full pipeline from ingestion through output/export.
 
-    Resolves ExcelConfig overrides (column_mapping, sheet_name, header_row),
-    calls ingest_excel_file, and renders a Rich summary panel or JSON.
+    Steps:
+    1. Parse Excel file (ingest)
+    2. Run LangGraph pipeline (aggregate → analyze → assess → generate → validate → decide)
+    3. Render Rich terminal output or JSON
+    4. Optionally export xlsx/pdf change request form
     """
     from policyfoundry.ingestion.excel import ingest_excel_file
     from policyfoundry.ingestion.excel_schema import ColumnMapping
@@ -129,6 +138,7 @@ def _run_excel_ingestion(
     if excel_cfg.column_mapping is not None:
         column_mapping = ColumnMapping(**excel_cfg.column_mapping)
 
+    # Step 1: Ingest Excel file
     result = ingest_excel_file(
         path=file_path,
         column_mapping=column_mapping,
@@ -136,62 +146,78 @@ def _run_excel_ingestion(
         header_row=excel_cfg.header_row,
     )
 
+    if not result.records:
+        raise PolicyFoundryError(
+            f"No records parsed from {file_path}. Check the file format and column mapping.",
+            error_code="EMPTY_EXCEL_FILE",
+            details={"file": str(file_path), "skipped_rows": result.skipped_rows},
+        )
+
+    # Step 2: Run the full Excel pipeline
+    async def _run() -> dict:
+        llm_client = await create_llm_client(cfg.llm)
+
+        with console.status("[bold blue]Running Excel analysis pipeline..."):
+            state = await run_excel_pipeline(
+                llm_client=llm_client,
+                records=result.records,
+            )
+
+        # Attach token usage (matching M01 pattern — CLI layer owns this)
+        usage = llm_client.get_usage()
+        state["token_usage"] = usage.to_dict()
+
+        return state
+
+    state = asyncio.run(_run())
+
+    # Step 3: Format output
     if output_format == "json":
-        import json as _json
-
-        summary = {
-            "source_file": result.source_file,
-            "total_rows": result.total_rows,
-            "parsed_rows": result.parsed_rows,
-            "skipped_rows": result.skipped_rows,
-            "column_mapping": result.column_mapping.model_dump() if result.column_mapping else None,
-            "warnings_count": len(result.warnings),
-        }
-        typer.echo(_json.dumps(summary, indent=2))
+        output = format_excel_json(state)
+        typer.echo(output)
     else:
-        # Rich summary panel
-        mapping_table = Table(
-            title="Column Mapping",
-            show_header=True,
-            header_style="bold cyan",
-            box=None,
-            padding=(0, 2),
-        )
-        mapping_table.add_column("Field", style="bold")
-        mapping_table.add_column("Column Index", justify="right")
+        format_excel_rich(state, console=console)
 
-        if result.column_mapping:
-            for field_name, col_idx in result.column_mapping.model_dump().items():
-                mapping_table.add_row(field_name, str(col_idx))
+    # Step 4: Export if requested
+    if export_format:
+        _export_results(state, export_format, template_path, file_path)
 
-        stats_lines = [
-            f"[bold]Source file:[/bold] {result.source_file}",
-            f"[bold]Total rows:[/bold]  {result.total_rows:,}",
-            f"[bold]Parsed rows:[/bold] {result.parsed_rows:,}",
-            f"[bold]Skipped rows:[/bold] {result.skipped_rows:,}",
-        ]
 
-        if result.warnings:
-            stats_lines.append(
-                f"[bold]Warnings:[/bold]     {len(result.warnings):,}"
+def _export_results(
+    state: dict,
+    export_format: str,
+    template_path: Path | None,
+    source_file: Path,
+) -> None:
+    """Export pipeline results to xlsx and/or pdf.
+
+    Supports comma-separated formats: ``--export xlsx,pdf``.
+    Output files are named after the source file with the export extension.
+    """
+    formats = [f.strip().lower() for f in export_format.split(",")]
+    stem = source_file.stem
+
+    for fmt in formats:
+        if fmt == "xlsx":
+            out_path = source_file.parent / f"{stem}_change_request.xlsx"
+            exported = export_xlsx(
+                state,
+                out_path,
+                template_path=str(template_path) if template_path else None,
             )
-
-        console.print()
-        console.print(
-            Panel(
-                "\n".join(stats_lines),
-                title="[bold green]Excel Ingestion Summary[/bold green]",
-                border_style="green",
+            console.print(
+                f"[bold green]✓[/bold green] Excel change request exported: {exported}"
             )
-        )
-        console.print()
-        console.print(mapping_table)
-
-        if result.warnings and _verbose:
-            console.print()
-            console.print("[bold yellow]Warnings (first 20):[/bold yellow]")
-            for w in result.warnings[:20]:
-                console.print(f"  ⚠ {w}")
+        elif fmt == "pdf":
+            out_path = source_file.parent / f"{stem}_change_request.pdf"
+            exported = export_pdf(state, out_path)
+            console.print(
+                f"[bold green]✓[/bold green] PDF change request exported: {exported}"
+            )
+        else:
+            console.print(
+                f"[bold yellow]⚠[/bold yellow] Unknown export format: {fmt} (supported: xlsx, pdf)"
+            )
 
 
 @app.command()
@@ -208,6 +234,14 @@ def analyze(
         Optional[Path],
         typer.Option("--file", help="Path to input file (required for --source excel)."),
     ] = None,
+    export: Annotated[
+        Optional[str],
+        typer.Option("--export", help="Export format(s): xlsx, pdf, or xlsx,pdf."),
+    ] = None,
+    template: Annotated[
+        Optional[Path],
+        typer.Option("--template", help="Custom Excel template for change request export."),
+    ] = None,
     sg_ids: Annotated[
         Optional[list[str]],
         typer.Option("--sg-ids", help="Security group IDs to analyze."),
@@ -223,9 +257,12 @@ def analyze(
 ) -> None:
     """Run the analysis pipeline on VPC flow logs or Excel traffic exports.
 
-    For Excel sources: parses the file, auto-detects columns, and prints
-    an ingestion summary. For VPC flow log sources: runs the full analysis
-    pipeline with LLM-powered rule recommendations.
+    For Excel sources: parses the file, runs the full LangGraph analysis
+    pipeline, displays Rich terminal output (or JSON), and optionally
+    exports change request forms as xlsx/pdf.
+
+    For VPC flow log sources: runs the full analysis pipeline with
+    LLM-powered rule recommendations.
     """
     global _debug  # noqa: PLW0603
     if debug:
@@ -238,7 +275,15 @@ def analyze(
             overrides["_yaml_file"] = str(config_path)
         cfg = load_config(**overrides)
 
-        # Excel source — parse and summarize (no pipeline yet)
+        # Validate --template only with --export xlsx
+        if template is not None and (export is None or "xlsx" not in export.lower()):
+            raise PolicyFoundryError(
+                "The --template option requires --export xlsx. "
+                "Example: policyfoundry analyze --source excel --file traffic.xlsx --export xlsx --template custom.xlsx",
+                error_code="TEMPLATE_WITHOUT_EXPORT",
+            )
+
+        # Excel source — full pipeline
         if source == "excel":
             if file is None:
                 raise PolicyFoundryError(
@@ -246,7 +291,7 @@ def analyze(
                     "Example: policyfoundry analyze --source excel --file traffic.xlsx",
                     error_code="MISSING_FILE_OPTION",
                 )
-            _run_excel_ingestion(file, cfg, format)
+            _run_excel_analyze(file, cfg, format, export, template)
             return
 
         # VPC flow log sources (local, s3)

@@ -35,13 +35,13 @@ RISK_COLORS: dict[str, str] = {
 }
 
 
-def _risk_text(level: str) -> Text:
+def risk_text(level: str) -> Text:
     """Create a Rich Text with risk-appropriate color."""
     style = RISK_COLORS.get(level, "white")
     return Text(level, style=style)
 
 
-def _render_summary(state: dict[str, Any], console: Console) -> None:
+def render_summary(state: dict[str, Any], console: Console) -> None:
     """Render the pipeline run summary panel."""
     run_id = state.get("run_id", "unknown")
     started_at = state.get("started_at", "unknown")
@@ -62,7 +62,7 @@ def _render_summary(state: dict[str, Any], console: Console) -> None:
     console.print(panel)
 
 
-def _render_traffic_analysis(analysis: TrafficAnalysis, console: Console) -> None:
+def render_traffic_analysis(analysis: TrafficAnalysis, console: Console) -> None:
     """Render traffic analysis section."""
     console.print("\n[bold]Traffic Analysis[/bold]")
     console.print("  ", analysis.summary)
@@ -82,13 +82,13 @@ def _render_traffic_analysis(analysis: TrafficAnalysis, console: Console) -> Non
     console.print(table)
 
 
-def _render_security_assessment(assessment: SecurityAssessment, console: Console) -> None:
+def render_security_assessment(assessment: SecurityAssessment, console: Console) -> None:
     """Render security assessment section."""
     console.print("\n[bold]Security Assessment[/bold]")
 
     risk_str = str(assessment.overall_risk)
-    risk_text = _risk_text(risk_str)
-    console.print("  Overall Risk: ", risk_text)
+    risk_styled = risk_text(risk_str)
+    console.print("  Overall Risk: ", risk_styled)
 
     scores: list[dict[str, Any]] = assessment.risk_scores
     score_table = Table(show_header=True, header_style="bold cyan")
@@ -116,7 +116,7 @@ def _render_security_assessment(assessment: SecurityAssessment, console: Console
             console.print(f"    • {finding}")
 
 
-def _render_proposals(proposals: list[PolicyProposal], console: Console) -> None:
+def render_proposals(proposals: list[PolicyProposal], console: Console) -> None:
     """Render policy proposals section."""
     console.print("\n[bold]Policy Proposals[/bold]")
 
@@ -126,16 +126,16 @@ def _render_proposals(proposals: list[PolicyProposal], console: Console) -> None
 
     for proposal in proposals:
         risk_str = str(proposal.risk_level)
-        risk_text = _risk_text(risk_str)
+        risk_styled = risk_text(risk_str)
 
         console.print(f"\n  [bold]{proposal.proposal_id}[/bold]")
         console.print(f"    Rule:          {proposal.rule.name}")
         console.print(f"    Justification: {proposal.justification}")
-        console.print("    Risk Level:    ", risk_text)
+        console.print("    Risk Level:    ", risk_styled)
         console.print(f"    Confidence:    {proposal.confidence:.0%}")
 
 
-def _render_decisions(decisions: list[RuleDecision], console: Console) -> None:
+def render_decisions(decisions: list[RuleDecision], console: Console) -> None:
     """Render decisions table with risk-colored risk_level cells."""
     console.print("\n[bold]Decisions[/bold]")
 
@@ -153,13 +153,13 @@ def _render_decisions(decisions: list[RuleDecision], console: Console) -> None:
 
     for decision in decisions:
         risk_str = str(decision.risk_level)
-        risk_text = _risk_text(risk_str)
+        risk_styled = risk_text(risk_str)
 
         table.add_row(
             str(decision.decision_id),
             str(decision.proposal_id),
             str(decision.action),
-            risk_text,
+            risk_styled,
             str(decision.reason),
             "Yes" if decision.approval_required else "No",
         )
@@ -167,7 +167,7 @@ def _render_decisions(decisions: list[RuleDecision], console: Console) -> None:
     console.print(table)
 
 
-def _render_token_usage(token_data: dict[str, Any] | None, console: Console) -> None:
+def render_token_usage(token_data: dict[str, Any] | None, console: Console) -> None:
     """Render token usage footer, or N/A if absent."""
     console.print("\n[bold]Token Usage[/bold]")
 
@@ -210,17 +210,17 @@ def format_rich(state: PipelineState, *, console: Console | None = None) -> None
     if console is None:
         console = Console()
 
-    raw = dict(state)
+    raw: dict[str, Any] = dict(state)
 
     # Summary always renders
-    _render_summary(raw, console)
+    render_summary(raw, console)
 
     # Traffic analysis
     try:
         analysis_data = raw.get("analysis")
         if analysis_data is not None:
             analysis = TrafficAnalysis.model_validate(analysis_data)
-            _render_traffic_analysis(analysis, console)
+            render_traffic_analysis(analysis, console)
     except Exception:
         logger.warning("Failed to render traffic analysis section", exc_info=True)
 
@@ -229,7 +229,7 @@ def format_rich(state: PipelineState, *, console: Console | None = None) -> None
         assessment_data = raw.get("assessment")
         if assessment_data is not None:
             assessment = SecurityAssessment.model_validate(assessment_data)
-            _render_security_assessment(assessment, console)
+            render_security_assessment(assessment, console)
     except Exception:
         logger.warning("Failed to render security assessment section", exc_info=True)
 
@@ -239,7 +239,7 @@ def format_rich(state: PipelineState, *, console: Console | None = None) -> None
         proposals: list[PolicyProposal] = []
         if proposals_data is not None:
             proposals = [PolicyProposal.model_validate(p) for p in proposals_data]
-        _render_proposals(proposals, console)
+        render_proposals(proposals, console)
     except Exception:
         logger.warning("Failed to render proposals section", exc_info=True)
 
@@ -249,9 +249,9 @@ def format_rich(state: PipelineState, *, console: Console | None = None) -> None
         decisions: list[RuleDecision] = []
         if decisions_data is not None:
             decisions = [RuleDecision.model_validate(d) for d in decisions_data]
-        _render_decisions(decisions, console)
+        render_decisions(decisions, console)
     except Exception:
         logger.warning("Failed to render decisions section", exc_info=True)
 
     # Token usage
-    _render_token_usage(raw.get("token_usage"), console)
+    render_token_usage(raw.get("token_usage"), console)
