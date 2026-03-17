@@ -4,17 +4,6 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Active
 
-### R401 — Output rendering errors and export failures must surface visible diagnostics, not be swallowed by bare `except Exception` blocks. Template export with no matching columns must raise an error, not produce an empty file with a success message.
-- Class: failure-visibility
-- Status: active
-- Description: Output rendering errors and export failures must surface visible diagnostics, not be swallowed by bare `except Exception` blocks. Template export with no matching columns must raise an error, not produce an empty file with a success message.
-- Why it matters: Silent failures mean the user gets wrong or missing output and has no way to know. A success message on empty export is actively misleading.
-- Source: execution
-- Primary owning slice: M003-2heki1/S02
-- Supporting slices: none
-- Validation: mapped
-- Notes: Covers PR review issues #1, #2, #5, #8. Eight bare `except Exception` blocks in rich_output.py and excel_rich_output.py; silent return in template fill; swallowed ImportError in registry; orphaned decisions dropped silently.
-
 ### R406 — `RuleDecision.action` must be an enum (not bare `str`) since it drives control flow (`"SKIP"` check). `SubnetGroup.member_count` must have a consistency validator ensuring it equals `len(member_ips)`.
 - Class: quality-attribute
 - Status: active
@@ -215,6 +204,17 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: validated
 - Notes: Present and structurally valid.
 
+### R401 — Output rendering errors and export failures must surface visible diagnostics, not be swallowed by bare `except Exception` blocks. Template export with no matching columns must raise an error, not produce an empty file with a success message.
+- Class: failure-visibility
+- Status: validated
+- Description: Output rendering errors and export failures must surface visible diagnostics, not be swallowed by bare `except Exception` blocks. Template export with no matching columns must raise an error, not produce an empty file with a success message.
+- Why it matters: Silent failures mean the user gets wrong or missing output and has no way to know. A success message on empty export is actively misleading.
+- Source: execution
+- Primary owning slice: M003-2heki1/S02
+- Supporting slices: none
+- Validation: Verified by 20 targeted tests: ExportError raised on zero matching template columns (test_template_no_matching_columns), orphaned decisions logged with context (test_orphaned_decision_logs_warning), adapter ImportError logged with exc_info (test_get_adapter_logs_import_error), and 8 render failure warning tests proving console output appears for each section (4 in rich_output, 4 in excel_rich_output). 647 tests pass with zero regressions.
+- Notes: Covers PR review issues #1, #2, #5, #8. Eight bare `except Exception` blocks in rich_output.py and excel_rich_output.py; silent return in template fill; swallowed ImportError in registry; orphaned decisions dropped silently.
+
 ### R402 — LLM prompt text must accurately describe the data models being sent. Field names referenced in prompts must match the actual Pydantic model fields.
 - Class: quality-attribute
 - Status: validated
@@ -327,7 +327,7 @@ This file is the explicit capability and coverage contract for the project.
 | R202 | core-capability | deferred | future | none | unmapped |
 | R301 | anti-feature | out-of-scope | none | none | n/a |
 | R302 | constraint | out-of-scope | none | none | n/a |
-| R401 | failure-visibility | active | M003-2heki1/S02 | none | mapped |
+| R401 | failure-visibility | validated | M003-2heki1/S02 | none | Verified by 20 targeted tests: ExportError raised on zero matching template columns (test_template_no_matching_columns), orphaned decisions logged with context (test_orphaned_decision_logs_warning), adapter ImportError logged with exc_info (test_get_adapter_logs_import_error), and 8 render failure warning tests proving console output appears for each section (4 in rich_output, 4 in excel_rich_output). 647 tests pass with zero regressions. |
 | R402 | quality-attribute | validated | M003-2heki1/S01 | none | Generate prompt references dst_ip/src_ip with both grouping directions. 5 regression tests guard against counterpart_ip reappearing. rg 'counterpart_ip' src/policyfoundry/pipeline/excel_prompts/ returns empty. |
 | R403 | failure-visibility | validated | M003-2heki1/S01 | none | Both runners extract stage from exc.__cause__ PipelineError details, not initial_state. 8 runner tests verify correct stage extraction and prove "starting" is never used. |
 | R404 | operability | validated | M003-2heki1/S01 | none | All 8 complete() calls (4 Excel + 4 VPC stages) pass stage= kwarg. 8 test assertions verify stage= in call_args for each stage. rg 'stage=' confirms all calls tagged. |
@@ -341,7 +341,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 7
-- Mapped to slices: 7
-- Validated: 16 (R101, R102, R103, R104, R105, R106, R107, R108, R109, R110, R111, R112, R402, R403, R404, R405)
+- Active requirements: 6
+- Mapped to slices: 6
+- Validated: 17 (R101, R102, R103, R104, R105, R106, R107, R108, R109, R110, R111, R112, R401, R402, R403, R404, R405)
 - Unmapped active requirements: 0
