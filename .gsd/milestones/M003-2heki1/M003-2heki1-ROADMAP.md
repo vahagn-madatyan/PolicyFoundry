@@ -48,7 +48,7 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: Pipeline Correctness & Observability** `risk:high` `depends:[]`
+- [x] **S01: Pipeline Correctness & Observability** `risk:high` `depends:[]`
   > After this: Pipeline errors report correct stage name; token usage shows per-stage breakdown; generate prompt references actual `dst_ip`/`src_ip` field names; rejected proposals and stage failures are logged. Verified by targeted tests.
 
 - [ ] **S02: Silent Failure Elimination** `risk:medium` `depends:[]`
