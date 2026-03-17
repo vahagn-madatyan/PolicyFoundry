@@ -281,6 +281,71 @@ class TestFormatExcelRichEmptyState:
         assert "run-excel-empty-001" in output
 
 
+class TestFormatExcelRichRenderFailureWarnings:
+    """Verify console warnings appear when a section fails to render."""
+
+    def test_warns_on_analysis_render_failure(
+        self, sample_excel_state: ExcelPipelineState,
+    ) -> None:
+        """Malformed analysis data triggers visible console warning."""
+        state = dict(sample_excel_state)
+        state["analysis"] = "not-a-valid-analysis"
+
+        buf = StringIO()
+        console = Console(file=buf, force_terminal=False, width=120)
+        format_excel_rich(state, console=console)
+        output = buf.getvalue()
+
+        assert "⚠ Failed to render traffic analysis" in output
+        assert "Decisions" in output  # graceful degradation
+        assert "Token Usage" in output
+
+    def test_warns_on_assessment_render_failure(
+        self, sample_excel_state: ExcelPipelineState,
+    ) -> None:
+        """Malformed assessment data triggers visible console warning."""
+        state = dict(sample_excel_state)
+        state["assessment"] = "not-a-valid-assessment"
+
+        buf = StringIO()
+        console = Console(file=buf, force_terminal=False, width=120)
+        format_excel_rich(state, console=console)
+        output = buf.getvalue()
+
+        assert "⚠ Failed to render security assessment" in output
+        assert "Excel Pipeline Summary" in output  # still renders
+
+    def test_warns_on_proposals_render_failure(
+        self, sample_excel_state: ExcelPipelineState,
+    ) -> None:
+        """Malformed proposals data triggers visible console warning."""
+        state = dict(sample_excel_state)
+        state["proposals"] = [{"bad": "proposal_data"}]
+
+        buf = StringIO()
+        console = Console(file=buf, force_terminal=False, width=120)
+        format_excel_rich(state, console=console)
+        output = buf.getvalue()
+
+        assert "⚠ Failed to render proposals" in output
+        assert "Decisions" in output  # still renders
+
+    def test_warns_on_decisions_render_failure(
+        self, sample_excel_state: ExcelPipelineState,
+    ) -> None:
+        """Malformed decisions data triggers visible console warning."""
+        state = dict(sample_excel_state)
+        state["decisions"] = [{"bad": "decision_data"}]
+
+        buf = StringIO()
+        console = Console(file=buf, force_terminal=False, width=120)
+        format_excel_rich(state, console=console)
+        output = buf.getvalue()
+
+        assert "⚠ Failed to render decisions" in output
+        assert "Token Usage" in output  # still renders
+
+
 # ---------------------------------------------------------------------------
 # JSON output tests
 # ---------------------------------------------------------------------------

@@ -33,7 +33,7 @@
   - Verify: `pytest tests/test_export/test_xlsx_export.py tests/test_export/test_export_models.py tests/test_adapters/test_registry.py -v`
   - Done when: All three targeted tests pass, no regressions in related test files
 
-- [ ] **T02: Add console warnings on render failures and run full regression** `est:45m`
+- [x] **T02: Add console warnings on render failures and run full regression** `est:45m`
   - Why: The 8 bare `except Exception` blocks in output renderers log errors but never tell the user anything went wrong. Adding Rich console warnings makes failures visible. This is the largest change by file count but is a single repeated pattern. Includes full regression to close the slice.
   - Files: `src/policyfoundry/output/rich_output.py`, `src/policyfoundry/output/excel_rich_output.py`, `tests/test_output/test_rich_output.py`, `tests/test_output/test_excel_output.py`
   - Do: (1) In `rich_output.py`, add `console.print(f"[yellow]⚠ Failed to render {section_name}[/yellow]")` inside each of the 4 `except Exception` blocks (traffic analysis ~L224, security assessment ~L233, proposals ~L243, decisions ~L253), keeping existing `logger.warning` calls. (2) Apply the same pattern to the 4 `except Exception` blocks in `excel_rich_output.py` (~L113, ~L122, ~L132, ~L142). (3) Add tests that inject bad data causing `model_validate()` or section-rendering to fail, then capture console output and assert the `⚠ Failed to render` warning text appears. (4) Run full regression: `pytest --ignore=tests/test_adapters/test_aws_sg_adapter.py --ignore=tests/test_ingestion/test_s3.py -q` — expect 636+ passed, 0 failed.

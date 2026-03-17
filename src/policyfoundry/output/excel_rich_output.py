@@ -112,6 +112,7 @@ def format_excel_rich(
             render_traffic_analysis(analysis, console)
     except Exception:
         logger.warning("Failed to render traffic analysis section", exc_info=True)
+        console.print("[yellow]⚠ Failed to render traffic analysis[/yellow]")
 
     # Security assessment (shared renderer)
     try:
@@ -121,6 +122,7 @@ def format_excel_rich(
             render_security_assessment(assessment, console)
     except Exception:
         logger.warning("Failed to render security assessment section", exc_info=True)
+        console.print("[yellow]⚠ Failed to render security assessment[/yellow]")
 
     # Proposals (shared renderer)
     try:
@@ -131,6 +133,7 @@ def format_excel_rich(
         render_proposals(proposals, console)
     except Exception:
         logger.warning("Failed to render proposals section", exc_info=True)
+        console.print("[yellow]⚠ Failed to render proposals[/yellow]")
 
     # Decisions (shared renderer)
     try:
@@ -141,6 +144,7 @@ def format_excel_rich(
         render_decisions(decisions, console)
     except Exception:
         logger.warning("Failed to render decisions section", exc_info=True)
+        console.print("[yellow]⚠ Failed to render decisions[/yellow]")
 
     # Token usage (shared renderer)
     render_token_usage(raw.get("token_usage"), console)

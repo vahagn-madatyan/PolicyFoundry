@@ -223,6 +223,7 @@ def format_rich(state: PipelineState, *, console: Console | None = None) -> None
             render_traffic_analysis(analysis, console)
     except Exception:
         logger.warning("Failed to render traffic analysis section", exc_info=True)
+        console.print("[yellow]⚠ Failed to render traffic analysis[/yellow]")
 
     # Security assessment
     try:
@@ -232,6 +233,7 @@ def format_rich(state: PipelineState, *, console: Console | None = None) -> None
             render_security_assessment(assessment, console)
     except Exception:
         logger.warning("Failed to render security assessment section", exc_info=True)
+        console.print("[yellow]⚠ Failed to render security assessment[/yellow]")
 
     # Proposals
     try:
@@ -242,6 +244,7 @@ def format_rich(state: PipelineState, *, console: Console | None = None) -> None
         render_proposals(proposals, console)
     except Exception:
         logger.warning("Failed to render proposals section", exc_info=True)
+        console.print("[yellow]⚠ Failed to render proposals[/yellow]")
 
     # Decisions
     try:
@@ -252,6 +255,7 @@ def format_rich(state: PipelineState, *, console: Console | None = None) -> None
         render_decisions(decisions, console)
     except Exception:
         logger.warning("Failed to render decisions section", exc_info=True)
+        console.print("[yellow]⚠ Failed to render decisions[/yellow]")
 
     # Token usage
     render_token_usage(raw.get("token_usage"), console)
