@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import logging
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from policyfoundry.adapters.schema import AdapterCapabilities, UniversalRule
+from policyfoundry.adapters.schema import AdapterCapabilities, UniversalRule, ValidationIssue, ValidationResult
 from policyfoundry.pipeline.schema import PolicyProposal, SecurityAssessment, TrafficAnalysis
 from policyfoundry.pipeline.state import PipelineState
 from policyfoundry.storage.models import (
@@ -86,6 +87,7 @@ class TestAnalyzeStage:
             call_args = _mock_runtime.context.llm_client.complete.call_args
             assert call_args[0][1] is TrafficAnalysis
             assert call_args[1]["temperature"] == 0.1
+            assert call_args[1]["stage"] == "analyze"
 
     async def test_analyze_stage_returns_analysis_dict(
         self,
@@ -216,7 +218,8 @@ class TestRunPipeline:
             with pytest.raises(PipelineError) as exc_info:
                 await run_pipeline(mock_llm_client, mock_adapter, "/tmp/test-data", ["sg-123"])
 
-            assert exc_info.value.error_code == "PIPELINE_STAGE_FAILED"
+            # Stage-level wrapping catches first, carrying stage details
+            assert exc_info.value.details.get("stage") == "analyze"
 
 
 class TestAssessStage:
@@ -272,6 +275,7 @@ class TestAssessStage:
         _mock_runtime.context.llm_client.complete.assert_called_once()
         call_args = _mock_runtime.context.llm_client.complete.call_args
         assert call_args[0][1] is SecurityAssessment
+        assert call_args[1]["stage"] == "assess"
 
     async def test_assess_stage_reads_analysis_from_state(
         self,
@@ -385,6 +389,8 @@ class TestGenerateStage:
         await generate_stage(_mock_state, _mock_runtime)
 
         _mock_runtime.context.llm_client.complete.assert_called_once()
+        call_args = _mock_runtime.context.llm_client.complete.call_args
+        assert call_args[1]["stage"] == "generate"
 
     async def test_generate_stage_returns_proposals_list(
         self,
@@ -600,6 +606,7 @@ class TestDecideStage:
         _mock_runtime.context.llm_client.complete.assert_called_once()
         call_args = _mock_runtime.context.llm_client.complete.call_args
         assert call_args[1]["temperature"] == 0.1
+        assert call_args[1]["stage"] == "decide"
 
     async def test_decide_stage_returns_decisions_list(
         self,
@@ -650,3 +657,272 @@ class TestDecideStage:
         await decide_stage(_mock_state, _mock_runtime)
 
         assert _mock_runtime.context.llm_client.complete.call_count == 1
+
+
+# ---------------------------------------------------------------------------
+# VPC validate rejection logging tests
+# ---------------------------------------------------------------------------
+
+
+class TestVpcValidateRejectionLogging:
+    """Tests that VPC validate logs rejected proposals."""
+
+    @pytest.fixture
+    def _mock_runtime(
+        self,
+        mock_adapter: MagicMock,
+        sample_universal_rules: list[UniversalRule],
+    ) -> MagicMock:
+        """Create a mock Runtime with adapter for validate."""
+        mock_adapter.get_rules = AsyncMock(return_value=sample_universal_rules)
+        runtime = MagicMock()
+        runtime.context.adapter = mock_adapter
+        return runtime
+
+    async def test_logs_warning_on_rejected_proposal(
+        self,
+        _mock_runtime: MagicMock,
+        sample_policy_proposals: list[PolicyProposal],
+    ) -> None:
+        """Rejected VPC proposal emits logger.warning with proposal_id and reason."""
+        from policyfoundry.pipeline.stages.validate import validate_proposals
+
+        _mock_runtime.context.adapter.validate = AsyncMock(
+            side_effect=[
+                ValidationResult(valid=True),
+                ValidationResult(
+                    valid=False,
+                    errors=[ValidationIssue(code="RULE_LIMIT", message="Max rules exceeded", field="rule_count")],
+                ),
+                ValidationResult(valid=True),
+            ],
+        )
+
+        state = PipelineState(
+            run_id="test-run",
+            current_stage="generate",
+            proposals=[p.model_dump() for p in sample_policy_proposals],
+        )
+
+        with patch("policyfoundry.pipeline.stages.validate.logger") as mock_logger:
+            result = await validate_proposals(state, _mock_runtime)
+
+            mock_logger.warning.assert_called_once()
+            call_args = mock_logger.warning.call_args
+            assert "prop-002" in str(call_args)
+            assert "Max rules exceeded" in str(call_args)
+            assert len(result["proposals"]) == 2
+
+    async def test_logs_fallback_reason_when_no_errors(
+        self,
+        _mock_runtime: MagicMock,
+        sample_policy_proposals: list[PolicyProposal],
+    ) -> None:
+        """Rejected VPC proposal with empty errors logs fallback reason."""
+        from policyfoundry.pipeline.stages.validate import validate_proposals
+
+        _mock_runtime.context.adapter.validate = AsyncMock(
+            side_effect=[
+                ValidationResult(valid=False),
+                ValidationResult(valid=True),
+                ValidationResult(valid=True),
+            ],
+        )
+
+        state = PipelineState(
+            run_id="test-run",
+            current_stage="generate",
+            proposals=[p.model_dump() for p in sample_policy_proposals],
+        )
+
+        with patch("policyfoundry.pipeline.stages.validate.logger") as mock_logger:
+            await validate_proposals(state, _mock_runtime)
+
+            mock_logger.warning.assert_called_once()
+            call_args = mock_logger.warning.call_args
+            assert "prop-001" in str(call_args)
+            assert "validation failed" in str(call_args)
+
+    async def test_no_warning_when_all_valid(
+        self,
+        _mock_runtime: MagicMock,
+        sample_policy_proposals: list[PolicyProposal],
+    ) -> None:
+        """No warnings emitted when all VPC proposals are valid."""
+        from policyfoundry.pipeline.stages.validate import validate_proposals
+
+        state = PipelineState(
+            run_id="test-run",
+            current_stage="generate",
+            proposals=[p.model_dump() for p in sample_policy_proposals],
+        )
+
+        with patch("policyfoundry.pipeline.stages.validate.logger") as mock_logger:
+            await validate_proposals(state, _mock_runtime)
+
+            mock_logger.warning.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# VPC stage error wrapping tests
+# ---------------------------------------------------------------------------
+
+
+class TestVpcStageErrorWrapping:
+    """Tests that VPC stage functions wrap non-PipelineError exceptions."""
+
+    async def test_analyze_wraps_runtime_error(
+        self,
+        mock_llm_client: MagicMock,
+    ) -> None:
+        """analyze_stage wraps RuntimeError in PipelineError with stage."""
+        from policyfoundry.exceptions import PipelineError
+        from policyfoundry.pipeline.stages.analyze import analyze_stage
+
+        runtime = MagicMock()
+        runtime.context.llm_client = mock_llm_client
+        runtime.context.data_dir = "/tmp/test-data"
+
+        state = PipelineState(run_id="test", current_stage="starting")
+
+        with (
+            patch(f"{_QUERIES_PATH}.traffic_summary", new_callable=AsyncMock, side_effect=RuntimeError("DB connection lost")),
+        ):
+            with pytest.raises(PipelineError) as exc_info:
+                await analyze_stage(state, runtime)
+
+            assert exc_info.value.details["stage"] == "analyze"
+            assert "DB connection lost" in str(exc_info.value)
+            assert isinstance(exc_info.value.__cause__, RuntimeError)
+
+    async def test_assess_wraps_with_stage_name(
+        self,
+        mock_llm_client: MagicMock,
+        mock_adapter: MagicMock,
+    ) -> None:
+        """assess_stage wraps exceptions with stage='assess'."""
+        from policyfoundry.exceptions import PipelineError
+        from policyfoundry.pipeline.stages.assess import assess_stage
+
+        mock_adapter.get_rules = AsyncMock(side_effect=ConnectionError("adapter unreachable"))
+
+        runtime = MagicMock()
+        runtime.context.llm_client = mock_llm_client
+        runtime.context.adapter = mock_adapter
+
+        state = PipelineState(
+            run_id="test",
+            current_stage="analyze",
+            analysis={"summary": "test"},
+        )
+
+        with pytest.raises(PipelineError) as exc_info:
+            await assess_stage(state, runtime)
+
+        assert exc_info.value.details["stage"] == "assess"
+        assert isinstance(exc_info.value.__cause__, ConnectionError)
+
+    async def test_generate_wraps_with_stage_name(
+        self,
+        mock_llm_client: MagicMock,
+        mock_adapter: MagicMock,
+    ) -> None:
+        """generate_stage wraps exceptions with stage='generate'."""
+        from policyfoundry.exceptions import PipelineError
+        from policyfoundry.pipeline.stages.generate import generate_stage
+
+        mock_llm_client.complete = AsyncMock(side_effect=ValueError("invalid schema"))
+
+        runtime = MagicMock()
+        runtime.context.llm_client = mock_llm_client
+        runtime.context.adapter = mock_adapter
+
+        state = PipelineState(
+            run_id="test",
+            current_stage="assess",
+            assessment={"overall_risk": "MEDIUM"},
+            analysis={"summary": "test"},
+        )
+
+        with pytest.raises(PipelineError) as exc_info:
+            await generate_stage(state, runtime)
+
+        assert exc_info.value.details["stage"] == "generate"
+
+    async def test_validate_wraps_unexpected_error(
+        self,
+        mock_adapter: MagicMock,
+        sample_universal_rules: list[UniversalRule],
+        sample_policy_proposals: list[PolicyProposal],
+    ) -> None:
+        """validate_proposals wraps unexpected errors with stage='validate'."""
+        from policyfoundry.exceptions import PipelineError
+        from policyfoundry.pipeline.stages.validate import validate_proposals
+
+        mock_adapter.get_rules = AsyncMock(side_effect=OSError("disk error"))
+        runtime = MagicMock()
+        runtime.context.adapter = mock_adapter
+
+        state = PipelineState(
+            run_id="test",
+            current_stage="generate",
+            proposals=[p.model_dump() for p in sample_policy_proposals],
+        )
+
+        with pytest.raises(PipelineError) as exc_info:
+            await validate_proposals(state, runtime)
+
+        assert exc_info.value.details["stage"] == "validate"
+
+    async def test_decide_wraps_with_stage_name(
+        self,
+        mock_llm_client: MagicMock,
+    ) -> None:
+        """decide_stage wraps exceptions with stage='decide'."""
+        from policyfoundry.exceptions import PipelineError
+        from policyfoundry.pipeline.stages.decide import decide_stage
+
+        mock_llm_client.complete = AsyncMock(side_effect=TypeError("bad type"))
+
+        runtime = MagicMock()
+        runtime.context.llm_client = mock_llm_client
+
+        state = PipelineState(
+            run_id="test",
+            current_stage="validate",
+            proposals=[{"proposal_id": "p1", "rule": {}, "justification": "test",
+                        "risk_level": "LOW", "confidence": 0.5, "impact_analysis": "test"}],
+        )
+
+        with pytest.raises(PipelineError) as exc_info:
+            await decide_stage(state, runtime)
+
+        assert exc_info.value.details["stage"] == "decide"
+
+    async def test_pipeline_error_not_double_wrapped(
+        self,
+        mock_llm_client: MagicMock,
+        mock_adapter: MagicMock,
+    ) -> None:
+        """PipelineError raised inside VPC stage is re-raised, not wrapped."""
+        from policyfoundry.exceptions import PipelineError
+        from policyfoundry.pipeline.stages.assess import assess_stage
+
+        original = PipelineError("original error", details={"stage": "assess", "custom": True})
+        mock_adapter.get_rules = AsyncMock(side_effect=original)
+
+        runtime = MagicMock()
+        runtime.context.llm_client = mock_llm_client
+        runtime.context.adapter = mock_adapter
+
+        state = PipelineState(
+            run_id="test",
+            current_stage="analyze",
+            analysis={"summary": "test"},
+        )
+
+        with pytest.raises(PipelineError) as exc_info:
+            await assess_stage(state, runtime)
+
+        assert exc_info.value is original
+        assert exc_info.value.details.get("custom") is True

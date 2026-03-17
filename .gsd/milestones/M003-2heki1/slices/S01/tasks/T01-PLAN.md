@@ -49,6 +49,12 @@ The `complete()` method in `src/policyfoundry/pipeline/llm.py` already accepts `
 - `src/policyfoundry/exceptions.py` — `PipelineError` class with `details` dict. Import this in runners if not already imported.
 - `tests/test_pipeline/conftest.py` — shared fixtures: `mock_llm_client`, `mock_adapter`, `mock_pipeline_context`
 
+## Observability Impact
+
+- **Token usage breakdown**: `TokenUsage.add_call()` now receives named stages (`analyze`, `assess`, `generate`, `decide`) instead of `"unknown"`. CLI token usage output shows per-stage cost attribution.
+- **Error stage identity**: `PipelineError.details["stage"]` in runner error handlers now carries the actual failed stage (extracted from caught exception cause) instead of always `"starting"`. Error messages say `stage: "generate"` when generate fails.
+- **Future agent inspection**: Grep `stage=` in stage files to verify all calls are tagged. Run `python3 -m pytest tests/test_pipeline/test_runner.py tests/test_pipeline/test_excel_runner.py -v` to verify error handler behavior. Check `PipelineError.details["stage"]` in exception for correct stage on failures.
+
 ## Expected Output
 
 - 8 stage files modified: each `complete()` call now has `stage=` parameter

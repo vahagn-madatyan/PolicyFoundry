@@ -14,6 +14,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from policyfoundry.analysis.models import AggregatedFlow, SubnetGroup
+from policyfoundry.exceptions import PipelineError
 from policyfoundry.pipeline.excel_prompts.analyze import (
     EXCEL_ANALYZE_SYSTEM_PROMPT,
     format_excel_analyze_user_message,
@@ -45,32 +46,37 @@ async def excel_analyze_stage(
         Dict with ``analysis`` (TrafficAnalysis as dict) and
         ``current_stage`` set to ``"analyze"``.
     """
-    ctx = runtime.context
+    try:
+        ctx = runtime.context
 
-    # Reconstruct domain models from state dicts
-    raw_flows = state.get("aggregated_flows", [])
-    raw_subnets = state.get("subnet_groups", [])
+        # Reconstruct domain models from state dicts
+        raw_flows = state.get("aggregated_flows", [])
+        raw_subnets = state.get("subnet_groups", [])
 
-    flows = [AggregatedFlow(**f) for f in raw_flows]
-    subnet_groups = [SubnetGroup(**sg) for sg in raw_subnets]
+        flows = [AggregatedFlow(**f) for f in raw_flows]
+        subnet_groups = [SubnetGroup(**sg) for sg in raw_subnets]
 
-    # Pre-summarize to compact stats (< 3K tokens)
-    summary = summarize_flows(flows, subnet_groups)
+        # Pre-summarize to compact stats (< 3K tokens)
+        summary = summarize_flows(flows, subnet_groups)
 
-    # Format user message from summary
-    user_message = format_excel_analyze_user_message(summary)
+        # Format user message from summary
+        user_message = format_excel_analyze_user_message(summary)
 
-    messages: list[dict[str, str]] = [
-        {"role": "system", "content": EXCEL_ANALYZE_SYSTEM_PROMPT},
-        {"role": "user", "content": user_message},
-    ]
+        messages: list[dict[str, str]] = [
+            {"role": "system", "content": EXCEL_ANALYZE_SYSTEM_PROMPT},
+            {"role": "user", "content": user_message},
+        ]
 
-    # Call LLM with structured output
-    analysis: TrafficAnalysis = await ctx.llm_client.complete(
-        messages, TrafficAnalysis, temperature=0.1,
-    )
+        # Call LLM with structured output
+        analysis: TrafficAnalysis = await ctx.llm_client.complete(
+            messages, TrafficAnalysis, temperature=0.1, stage="analyze",
+        )
 
-    return {
-        "analysis": analysis.model_dump(),
-        "current_stage": "analyze",
-    }
+        return {
+            "analysis": analysis.model_dump(),
+            "current_stage": "analyze",
+        }
+    except PipelineError:
+        raise
+    except Exception as e:
+        raise PipelineError(str(e), details={"stage": "analyze"}) from e

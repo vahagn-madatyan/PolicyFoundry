@@ -146,7 +146,10 @@ def _fill_template(
             header_row = row_num
 
     if not col_mapping:
-        return  # No matching columns found — nothing to fill
+        raise ExportError(
+            "Template contains no recognized columns",
+            error_code="TEMPLATE_NO_MATCHING_COLUMNS",
+        )
 
     # Find first empty row after header
     start_row = header_row + 1

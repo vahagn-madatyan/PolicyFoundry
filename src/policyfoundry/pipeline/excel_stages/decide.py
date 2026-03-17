@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
 
+from policyfoundry.exceptions import PipelineError
 from policyfoundry.pipeline.excel_prompts.decide import (
     EXCEL_DECIDE_SYSTEM_PROMPT,
     format_excel_decide_user_message,
@@ -46,30 +47,35 @@ async def excel_decide_stage(
         Dict with ``decisions`` (list of RuleDecision dicts) and
         ``current_stage`` set to ``"decide"``.
     """
-    ctx = runtime.context
-    proposals = state.get("proposals", [])
+    try:
+        ctx = runtime.context
+        proposals = state.get("proposals", [])
 
-    # Short-circuit if no proposals (D024)
-    if not proposals:
+        # Short-circuit if no proposals (D024)
+        if not proposals:
+            return {
+                "decisions": [],
+                "current_stage": "decide",
+            }
+
+        # Format user message with proposal summaries
+        user_message = format_excel_decide_user_message(proposals)
+
+        messages: list[dict[str, str]] = [
+            {"role": "system", "content": EXCEL_DECIDE_SYSTEM_PROMPT},
+            {"role": "user", "content": user_message},
+        ]
+
+        # Call LLM with wrapper model for list output (temperature=0.1)
+        result = await ctx.llm_client.complete(
+            messages, RuleDecisionList, temperature=0.1, stage="decide",
+        )
+
         return {
-            "decisions": [],
+            "decisions": [d.model_dump() for d in result.decisions],
             "current_stage": "decide",
         }
-
-    # Format user message with proposal summaries
-    user_message = format_excel_decide_user_message(proposals)
-
-    messages: list[dict[str, str]] = [
-        {"role": "system", "content": EXCEL_DECIDE_SYSTEM_PROMPT},
-        {"role": "user", "content": user_message},
-    ]
-
-    # Call LLM with wrapper model for list output (temperature=0.1)
-    result = await ctx.llm_client.complete(
-        messages, RuleDecisionList, temperature=0.1,
-    )
-
-    return {
-        "decisions": [d.model_dump() for d in result.decisions],
-        "current_stage": "decide",
-    }
+    except PipelineError:
+        raise
+    except Exception as e:
+        raise PipelineError(str(e), details={"stage": "decide"}) from e

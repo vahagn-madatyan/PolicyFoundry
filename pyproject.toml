@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "policyfoundry"
+name = "policy-foundry"
 version = "0.1.0"
 description = "AI-powered firewall policy management"
 license = {text = "Apache-2.0"}

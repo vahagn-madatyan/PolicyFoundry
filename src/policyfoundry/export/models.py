@@ -6,7 +6,10 @@ rows for xlsx/pdf export.
 
 from __future__ import annotations
 
+import logging
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 from policyfoundry.adapters.schema import NetworkEndpoint, PortRange
 from policyfoundry.output.models import ExcelPipelineResult
@@ -111,7 +114,12 @@ def flatten_to_entries(
 
         proposal = proposal_map.get(decision.proposal_id)
         if proposal is None:
-            # Decision references a proposal we don't have — skip gracefully
+            # Decision references a proposal we don't have — log and skip
+            logger.warning(
+                "Orphaned decision %s: proposal %s not found",
+                decision.decision_id,
+                decision.proposal_id,
+            )
             continue
 
         rule = proposal.rule

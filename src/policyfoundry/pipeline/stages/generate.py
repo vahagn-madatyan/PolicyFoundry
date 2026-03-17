@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
 
+from policyfoundry.exceptions import PipelineError
 from policyfoundry.pipeline.prompts.generate import (
     GENERATE_SYSTEM_PROMPT,
     format_generate_user_message,
@@ -37,32 +38,37 @@ async def generate_stage(state: PipelineState, runtime: Runtime[PipelineContext]
     Reads the SecurityAssessment and adapter capabilities, calls the LLM
     to produce structured PolicyProposals.
     """
-    ctx = runtime.context
-    assessment = state.get("assessment", {})
-    analysis = state.get("analysis", {})
+    try:
+        ctx = runtime.context
+        assessment = state.get("assessment", {})
+        analysis = state.get("analysis", {})
 
-    # Get adapter capabilities
-    capabilities = ctx.adapter.capabilities()
+        # Get adapter capabilities
+        capabilities = ctx.adapter.capabilities()
 
-    # Format user message
-    user_message = format_generate_user_message(
-        assessment, capabilities, analysis,
-    )
+        # Format user message
+        user_message = format_generate_user_message(
+            assessment, capabilities, analysis,
+        )
 
-    messages = [
-        {"role": "system", "content": GENERATE_SYSTEM_PROMPT},
-        {"role": "user", "content": user_message},
-    ]
+        messages = [
+            {"role": "system", "content": GENERATE_SYSTEM_PROMPT},
+            {"role": "user", "content": user_message},
+        ]
 
-    # Call LLM with wrapper model for list output
-    result = await ctx.llm_client.complete(
-        messages, PolicyProposalList, temperature=0.3,
-    )
+        # Call LLM with wrapper model for list output
+        result = await ctx.llm_client.complete(
+            messages, PolicyProposalList, temperature=0.3, stage="generate",
+        )
 
-    # Limit and serialize proposals
-    proposals = result.proposals[:_MAX_PROPOSALS]
+        # Limit and serialize proposals
+        proposals = result.proposals[:_MAX_PROPOSALS]
 
-    return {
-        "proposals": [p.model_dump() for p in proposals],
-        "current_stage": "generate",
-    }
+        return {
+            "proposals": [p.model_dump() for p in proposals],
+            "current_stage": "generate",
+        }
+    except PipelineError:
+        raise
+    except Exception as e:
+        raise PipelineError(str(e), details={"stage": "generate"}) from e

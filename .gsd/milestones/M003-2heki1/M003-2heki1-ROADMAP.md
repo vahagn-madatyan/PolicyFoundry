@@ -48,13 +48,13 @@ This milestone is complete only when all are true:
 
 ## Slices
 
-- [ ] **S01: Pipeline Correctness & Observability** `risk:high` `depends:[]`
+- [x] **S01: Pipeline Correctness & Observability** `risk:high` `depends:[]`
   > After this: Pipeline errors report correct stage name; token usage shows per-stage breakdown; generate prompt references actual `dst_ip`/`src_ip` field names; rejected proposals and stage failures are logged. Verified by targeted tests.
 
-- [ ] **S02: Silent Failure Elimination** `risk:medium` `depends:[]`
+- [x] **S02: Silent Failure Elimination** `risk:medium` `depends:[]`
   > After this: Template with no matching columns raises `ExportError`; render failures surface console warnings; orphaned decisions are logged; adapter `ImportError` is logged. Verified by targeted tests.
 
-- [ ] **S03: Type Safety & Data Integrity** `risk:low` `depends:[]`
+- [x] **S03: Type Safety & Data Integrity** `risk:low` `depends:[]`
   > After this: `RuleDecision.action` is a `DecisionAction` enum; `SubnetGroup.member_count` has a consistency validator; `dict()` construction is standard; subnet dedup produces correct results. Verified by targeted tests.
 
 ## Boundary Map

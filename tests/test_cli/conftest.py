@@ -96,7 +96,7 @@ def sample_pipeline_state() -> dict:
             {
                 "decision_id": "DEC-001",
                 "proposal_id": "PROP-001",
-                "action": "APPROVE",
+                "action": "CREATE",
                 "risk_level": "LOW",
                 "reason": "Low risk, high confidence change.",
                 "approval_required": False,

@@ -381,7 +381,7 @@ class TestPipelineErrorHandling:
         self,
         _mock_duckdb: None,
     ) -> None:
-        """Unexpected exception is wrapped in PipelineError."""
+        """Unexpected exception is wrapped in PipelineError with stage."""
         from policyfoundry.pipeline.llm import LLMClient
         from policyfoundry.pipeline.runner import run_pipeline
 
@@ -393,4 +393,5 @@ class TestPipelineErrorHandling:
         with pytest.raises(PipelineError) as exc_info:
             await run_pipeline(llm, adapter, "/tmp/test-data", ["sg-123"])
 
-        assert exc_info.value.error_code == "PIPELINE_STAGE_FAILED"
+        # Stage-level wrapping catches first, carrying stage details
+        assert exc_info.value.details.get("stage") == "analyze"

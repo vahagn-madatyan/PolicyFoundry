@@ -90,3 +90,61 @@ class TestFormatRichEmptyState:
         assert "run-empty-20260311-001" in output, (
             f"run_id not found in minimal state output:\n{output[:500]}"
         )
+
+
+class TestFormatRichRenderFailureWarnings:
+    """Verify console warnings appear when a section fails to render."""
+
+    def test_warns_on_analysis_render_failure(self, sample_pipeline_state: PipelineState) -> None:
+        """Malformed analysis data triggers visible console warning."""
+        state = dict(sample_pipeline_state)
+        state["analysis"] = "not-a-valid-analysis"  # causes model_validate to raise
+
+        buf = StringIO()
+        console = Console(file=buf, force_terminal=False, width=120)
+        format_rich(state, console=console)
+        output = buf.getvalue()
+
+        assert "⚠ Failed to render traffic analysis" in output
+        # Graceful degradation: other sections still render
+        assert "Decisions" in output
+        assert "Token Usage" in output
+
+    def test_warns_on_assessment_render_failure(self, sample_pipeline_state: PipelineState) -> None:
+        """Malformed assessment data triggers visible console warning."""
+        state = dict(sample_pipeline_state)
+        state["assessment"] = "not-a-valid-assessment"
+
+        buf = StringIO()
+        console = Console(file=buf, force_terminal=False, width=120)
+        format_rich(state, console=console)
+        output = buf.getvalue()
+
+        assert "⚠ Failed to render security assessment" in output
+        assert "Traffic Analysis" in output  # still renders
+
+    def test_warns_on_proposals_render_failure(self, sample_pipeline_state: PipelineState) -> None:
+        """Malformed proposals data triggers visible console warning."""
+        state = dict(sample_pipeline_state)
+        state["proposals"] = [{"bad": "proposal_data"}]
+
+        buf = StringIO()
+        console = Console(file=buf, force_terminal=False, width=120)
+        format_rich(state, console=console)
+        output = buf.getvalue()
+
+        assert "⚠ Failed to render proposals" in output
+        assert "Decisions" in output  # still renders
+
+    def test_warns_on_decisions_render_failure(self, sample_pipeline_state: PipelineState) -> None:
+        """Malformed decisions data triggers visible console warning."""
+        state = dict(sample_pipeline_state)
+        state["decisions"] = [{"bad": "decision_data"}]
+
+        buf = StringIO()
+        console = Console(file=buf, force_terminal=False, width=120)
+        format_rich(state, console=console)
+        output = buf.getvalue()
+
+        assert "⚠ Failed to render decisions" in output
+        assert "Token Usage" in output  # still renders

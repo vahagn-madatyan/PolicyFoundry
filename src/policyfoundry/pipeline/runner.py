@@ -64,7 +64,10 @@ async def run_pipeline(
     except PipelineError:
         raise
     except Exception as exc:
-        stage = initial_state.get("current_stage", "unknown")
+        # Extract stage from chained PipelineError if present, else "unknown"
+        stage = "unknown"
+        if isinstance(exc.__cause__, PipelineError) and exc.__cause__.details.get("stage"):
+            stage = exc.__cause__.details["stage"]
         raise PipelineError(
             f"Pipeline failed at stage: {stage}",
             error_code="PIPELINE_STAGE_FAILED",

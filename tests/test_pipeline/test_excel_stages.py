@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import json
-from unittest.mock import AsyncMock, MagicMock
+import logging
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -14,6 +15,7 @@ from policyfoundry.adapters.schema import (
     RiskLevel,
     RuleAction,
     UniversalRule,
+    ValidationIssue,
     ValidationResult,
 )
 from policyfoundry.analysis.models import AggregatedFlow, DirectionLabel, SubnetGroup
@@ -224,6 +226,7 @@ class TestExcelAnalyzeStage:
         call_args = mock_llm_client.complete.call_args
         assert call_args[0][1] is TrafficAnalysis
         assert call_args[1]["temperature"] == 0.1
+        assert call_args[1]["stage"] == "analyze"
 
     async def test_prompt_mentions_excel_traffic_export(
         self,
@@ -431,6 +434,7 @@ class TestExcelAssessStage:
         call_args = mock_llm_client.complete.call_args
         assert call_args[0][1] is SecurityAssessment
         assert call_args[1]["temperature"] == 0.1
+        assert call_args[1]["stage"] == "assess"
 
     async def test_calls_adapter_get_rules(
         self,
@@ -688,6 +692,47 @@ def sample_excel_decisions() -> list[RuleDecision]:
 
 
 # ---------------------------------------------------------------------------
+# Generate prompt content tests
+# ---------------------------------------------------------------------------
+
+
+class TestExcelGeneratePromptContent:
+    """Verify the generate system prompt references correct shared_patterns field names."""
+
+    def test_prompt_contains_dst_ip(self) -> None:
+        """Prompt references dst_ip for source-side subnet groups."""
+        from policyfoundry.pipeline.excel_prompts.generate import EXCEL_GENERATE_SYSTEM_PROMPT
+
+        assert "dst_ip" in EXCEL_GENERATE_SYSTEM_PROMPT
+
+    def test_prompt_contains_src_ip(self) -> None:
+        """Prompt references src_ip for destination-side subnet groups."""
+        from policyfoundry.pipeline.excel_prompts.generate import EXCEL_GENERATE_SYSTEM_PROMPT
+
+        assert "src_ip" in EXCEL_GENERATE_SYSTEM_PROMPT
+
+    def test_prompt_does_not_contain_counterpart_ip(self) -> None:
+        """counterpart_ip is not a real field — must not appear in prompt."""
+        from policyfoundry.pipeline.excel_prompts.generate import EXCEL_GENERATE_SYSTEM_PROMPT
+
+        assert "counterpart_ip" not in EXCEL_GENERATE_SYSTEM_PROMPT
+
+    def test_prompt_describes_both_grouping_directions(self) -> None:
+        """Prompt explains both source-side and destination-side grouping."""
+        from policyfoundry.pipeline.excel_prompts.generate import EXCEL_GENERATE_SYSTEM_PROMPT
+
+        assert "Source-side groups" in EXCEL_GENERATE_SYSTEM_PROMPT
+        assert "Destination-side groups" in EXCEL_GENERATE_SYSTEM_PROMPT
+
+    def test_prompt_mentions_service_port_and_protocol(self) -> None:
+        """Prompt references the other shared_patterns keys."""
+        from policyfoundry.pipeline.excel_prompts.generate import EXCEL_GENERATE_SYSTEM_PROMPT
+
+        assert "service_port" in EXCEL_GENERATE_SYSTEM_PROMPT
+        assert "protocol" in EXCEL_GENERATE_SYSTEM_PROMPT
+
+
+# ---------------------------------------------------------------------------
 # Generate stage tests
 # ---------------------------------------------------------------------------
 
@@ -756,6 +801,7 @@ class TestExcelGenerateStage:
 
         call_args = mock_llm_client.complete.call_args
         assert call_args[1]["temperature"] == 0.3
+        assert call_args[1]["stage"] == "generate"
 
     async def test_subnet_groups_passed_in_prompt(
         self,
@@ -1042,6 +1088,7 @@ class TestExcelDecideStage:
         call_args = mock_llm_client.complete.call_args
         assert call_args[0][1] is RuleDecisionList
         assert call_args[1]["temperature"] == 0.1
+        assert call_args[1]["stage"] == "decide"
 
     async def test_decide_prompt_is_excel_aware(
         self,
@@ -1072,3 +1119,273 @@ class TestExcelDecideStage:
         system_msg = call_args[0][0][0]["content"]
         assert "no existing rules" in system_msg.lower()
         assert "CREATE or SKIP" in system_msg
+
+
+# ---------------------------------------------------------------------------
+# Rejection logging tests
+# ---------------------------------------------------------------------------
+
+
+class TestExcelValidateRejectionLogging:
+    """Tests that rejected proposals emit logger.warning with context."""
+
+    async def test_logs_warning_on_rejected_proposal(
+        self,
+        mock_excel_runtime: MagicMock,
+        mock_adapter: MagicMock,
+        sample_excel_proposals_dicts: list[dict],
+    ) -> None:
+        """Rejected proposal emits logger.warning with proposal_id and reason."""
+        from policyfoundry.pipeline.excel_stages.validate import excel_validate_proposals
+
+        mock_adapter.validate = AsyncMock(
+            side_effect=[
+                ValidationResult(valid=True),
+                ValidationResult(
+                    valid=False,
+                    errors=[ValidationIssue(code="PORT_UNSUPPORTED", message="Port 22 not supported", field="port_range")],
+                ),
+            ],
+        )
+        mock_adapter.get_rules = AsyncMock(return_value=[])
+
+        state: ExcelPipelineState = {
+            "run_id": "test-run",
+            "current_stage": "generate",
+            "proposals": sample_excel_proposals_dicts,
+        }
+
+        with patch("policyfoundry.pipeline.excel_stages.validate.logger") as mock_logger:
+            await excel_validate_proposals(state, mock_excel_runtime)
+
+            mock_logger.warning.assert_called_once()
+            call_args = mock_logger.warning.call_args
+            assert "excel-prop-002" in str(call_args)
+            assert "Port 22 not supported" in str(call_args)
+
+    async def test_logs_fallback_reason_when_no_errors(
+        self,
+        mock_excel_runtime: MagicMock,
+        mock_adapter: MagicMock,
+        sample_excel_proposals_dicts: list[dict],
+    ) -> None:
+        """Rejected proposal with empty errors list logs fallback reason."""
+        from policyfoundry.pipeline.excel_stages.validate import excel_validate_proposals
+
+        mock_adapter.validate = AsyncMock(
+            side_effect=[
+                ValidationResult(valid=False),
+                ValidationResult(valid=True),
+            ],
+        )
+        mock_adapter.get_rules = AsyncMock(return_value=[])
+
+        state: ExcelPipelineState = {
+            "run_id": "test-run",
+            "current_stage": "generate",
+            "proposals": sample_excel_proposals_dicts,
+        }
+
+        with patch("policyfoundry.pipeline.excel_stages.validate.logger") as mock_logger:
+            await excel_validate_proposals(state, mock_excel_runtime)
+
+            mock_logger.warning.assert_called_once()
+            call_args = mock_logger.warning.call_args
+            assert "excel-prop-001" in str(call_args)
+            assert "validation failed" in str(call_args)
+
+    async def test_no_warning_when_all_valid(
+        self,
+        mock_excel_runtime: MagicMock,
+        mock_adapter: MagicMock,
+        sample_excel_proposals_dicts: list[dict],
+    ) -> None:
+        """No warnings emitted when all proposals are valid."""
+        from policyfoundry.pipeline.excel_stages.validate import excel_validate_proposals
+
+        mock_adapter.validate = AsyncMock(return_value=ValidationResult(valid=True))
+        mock_adapter.get_rules = AsyncMock(return_value=[])
+
+        state: ExcelPipelineState = {
+            "run_id": "test-run",
+            "current_stage": "generate",
+            "proposals": sample_excel_proposals_dicts,
+        }
+
+        with patch("policyfoundry.pipeline.excel_stages.validate.logger") as mock_logger:
+            await excel_validate_proposals(state, mock_excel_runtime)
+
+            mock_logger.warning.assert_not_called()
+
+    async def test_logs_multiple_error_reasons_joined(
+        self,
+        mock_excel_runtime: MagicMock,
+        mock_adapter: MagicMock,
+        sample_excel_proposals_dicts: list[dict],
+    ) -> None:
+        """Multiple validation errors are joined with semicolons in log."""
+        from policyfoundry.pipeline.excel_stages.validate import excel_validate_proposals
+
+        mock_adapter.validate = AsyncMock(
+            side_effect=[
+                ValidationResult(
+                    valid=False,
+                    errors=[
+                        ValidationIssue(code="PORT_UNSUPPORTED", message="Port not supported", field="port_range"),
+                        ValidationIssue(code="CIDR_TOO_BROAD", message="CIDR too broad", field="source"),
+                    ],
+                ),
+                ValidationResult(valid=True),
+            ],
+        )
+        mock_adapter.get_rules = AsyncMock(return_value=[])
+
+        state: ExcelPipelineState = {
+            "run_id": "test-run",
+            "current_stage": "generate",
+            "proposals": sample_excel_proposals_dicts,
+        }
+
+        with patch("policyfoundry.pipeline.excel_stages.validate.logger") as mock_logger:
+            await excel_validate_proposals(state, mock_excel_runtime)
+
+            call_args = mock_logger.warning.call_args
+            log_msg = call_args[0][2]  # The reason string (3rd positional arg)
+            assert "Port not supported" in log_msg
+            assert "CIDR too broad" in log_msg
+            assert ";" in log_msg
+
+
+# ---------------------------------------------------------------------------
+# Error wrapping tests
+# ---------------------------------------------------------------------------
+
+
+class TestExcelStageErrorWrapping:
+    """Tests that stage functions wrap non-PipelineError exceptions."""
+
+    async def test_analyze_wraps_runtime_error(
+        self,
+        mock_excel_runtime: MagicMock,
+        mock_llm_client: MagicMock,
+        sample_aggregated_flows_dicts: list[dict],
+        sample_subnet_groups_dicts: list[dict],
+    ) -> None:
+        """excel_analyze_stage wraps RuntimeError in PipelineError with stage."""
+        from policyfoundry.exceptions import PipelineError
+        from policyfoundry.pipeline.excel_stages.analyze import excel_analyze_stage
+
+        mock_llm_client.complete = AsyncMock(side_effect=RuntimeError("LLM timeout"))
+
+        state: ExcelPipelineState = {
+            "run_id": "test-run",
+            "current_stage": "starting",
+            "aggregated_flows": sample_aggregated_flows_dicts,
+            "subnet_groups": sample_subnet_groups_dicts,
+        }
+
+        with pytest.raises(PipelineError) as exc_info:
+            await excel_analyze_stage(state, mock_excel_runtime)
+
+        assert exc_info.value.details["stage"] == "analyze"
+        assert "LLM timeout" in str(exc_info.value)
+        assert isinstance(exc_info.value.__cause__, RuntimeError)
+
+    async def test_validate_wraps_unexpected_error(
+        self,
+        mock_excel_runtime: MagicMock,
+        mock_adapter: MagicMock,
+        sample_excel_proposals_dicts: list[dict],
+    ) -> None:
+        """excel_validate_proposals wraps unexpected errors."""
+        from policyfoundry.exceptions import PipelineError
+        from policyfoundry.pipeline.excel_stages.validate import excel_validate_proposals
+
+        mock_adapter.get_rules = AsyncMock(side_effect=ConnectionError("adapter down"))
+
+        state: ExcelPipelineState = {
+            "run_id": "test-run",
+            "current_stage": "generate",
+            "proposals": sample_excel_proposals_dicts,
+        }
+
+        with pytest.raises(PipelineError) as exc_info:
+            await excel_validate_proposals(state, mock_excel_runtime)
+
+        assert exc_info.value.details["stage"] == "validate"
+        assert isinstance(exc_info.value.__cause__, ConnectionError)
+
+    async def test_pipeline_error_not_double_wrapped(
+        self,
+        mock_excel_runtime: MagicMock,
+        mock_llm_client: MagicMock,
+        sample_aggregated_flows_dicts: list[dict],
+        sample_subnet_groups_dicts: list[dict],
+    ) -> None:
+        """PipelineError raised inside stage is re-raised as-is, not wrapped."""
+        from policyfoundry.exceptions import PipelineError
+        from policyfoundry.pipeline.excel_stages.analyze import excel_analyze_stage
+
+        original = PipelineError("structured fail", details={"stage": "analyze", "extra": "info"})
+        mock_llm_client.complete = AsyncMock(side_effect=original)
+
+        state: ExcelPipelineState = {
+            "run_id": "test-run",
+            "current_stage": "starting",
+            "aggregated_flows": sample_aggregated_flows_dicts,
+            "subnet_groups": sample_subnet_groups_dicts,
+        }
+
+        with pytest.raises(PipelineError) as exc_info:
+            await excel_analyze_stage(state, mock_excel_runtime)
+
+        assert exc_info.value is original
+        assert exc_info.value.details.get("extra") == "info"
+
+    async def test_generate_wraps_with_stage_name(
+        self,
+        mock_excel_runtime: MagicMock,
+        mock_llm_client: MagicMock,
+        sample_subnet_groups_dicts: list[dict],
+    ) -> None:
+        """excel_generate_stage wraps with stage='generate'."""
+        from policyfoundry.exceptions import PipelineError
+        from policyfoundry.pipeline.excel_stages.generate import excel_generate_stage
+
+        mock_llm_client.complete = AsyncMock(side_effect=ValueError("bad schema"))
+
+        state: ExcelPipelineState = {
+            "run_id": "test-run",
+            "current_stage": "assess",
+            "assessment": {},
+            "analysis": {},
+            "subnet_groups": sample_subnet_groups_dicts,
+        }
+
+        with pytest.raises(PipelineError) as exc_info:
+            await excel_generate_stage(state, mock_excel_runtime)
+
+        assert exc_info.value.details["stage"] == "generate"
+
+    async def test_decide_wraps_with_stage_name(
+        self,
+        mock_excel_runtime: MagicMock,
+        mock_llm_client: MagicMock,
+        sample_excel_proposals_dicts: list[dict],
+    ) -> None:
+        """excel_decide_stage wraps with stage='decide'."""
+        from policyfoundry.exceptions import PipelineError
+        from policyfoundry.pipeline.excel_stages.decide import excel_decide_stage
+
+        mock_llm_client.complete = AsyncMock(side_effect=TypeError("unexpected type"))
+
+        state: ExcelPipelineState = {
+            "run_id": "test-run",
+            "current_stage": "validate",
+            "proposals": sample_excel_proposals_dicts,
+        }
+
+        with pytest.raises(PipelineError) as exc_info:
+            await excel_decide_stage(state, mock_excel_runtime)
+
+        assert exc_info.value.details["stage"] == "decide"

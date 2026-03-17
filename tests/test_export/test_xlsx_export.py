@@ -264,3 +264,24 @@ class TestExportErrors:
             )
 
         assert exc_info.value.error_code == "TEMPLATE_LOAD_FAILED"
+
+    def test_template_no_matching_columns(
+        self,
+        sample_excel_state: ExcelPipelineState,
+        tmp_path: Path,
+    ) -> None:
+        """Template with only unrecognized columns raises ExportError."""
+        tpl = tmp_path / "bad_template.xlsx"
+        wb = Workbook()
+        ws = wb.active
+        assert ws is not None
+        ws.cell(row=1, column=1, value="FakeCol1")
+        ws.cell(row=1, column=2, value="FakeCol2")
+        ws.cell(row=1, column=3, value="NotARealColumn")
+        wb.save(tpl)
+
+        out = tmp_path / "output.xlsx"
+        with pytest.raises(ExportError) as exc_info:
+            export_xlsx(sample_excel_state, out, template_path=tpl)
+
+        assert exc_info.value.error_code == "TEMPLATE_NO_MATCHING_COLUMNS"

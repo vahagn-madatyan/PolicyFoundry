@@ -154,7 +154,7 @@ class PipelineResult(BaseModel):
         token_usage = None
         usage_raw = raw.get("token_usage")
         if usage_raw is not None and isinstance(usage_raw, dict):
-            usage_dict: dict[str, Any] = dict[str, Any](usage_raw)
+            usage_dict: dict[str, Any] = dict(usage_raw)
             token_usage = TokenUsage(
                 prompt_tokens=int(usage_dict.get("prompt_tokens", 0)),
                 completion_tokens=int(usage_dict.get("completion_tokens", 0)),
@@ -235,7 +235,7 @@ class ExcelPipelineResult(BaseModel):
         token_usage = None
         usage_raw = raw.get("token_usage")
         if usage_raw is not None and isinstance(usage_raw, dict):
-            usage_dict: dict[str, Any] = dict[str, Any](usage_raw)
+            usage_dict: dict[str, Any] = dict(usage_raw)
             token_usage = TokenUsage(
                 prompt_tokens=int(usage_dict.get("prompt_tokens", 0)),
                 completion_tokens=int(usage_dict.get("completion_tokens", 0)),

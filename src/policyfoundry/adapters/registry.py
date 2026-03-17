@@ -1,5 +1,6 @@
 """AdapterRegistry: plugin discovery via entry_points."""
 
+import logging
 from importlib.metadata import entry_points
 from typing import TYPE_CHECKING, Any
 
@@ -7,6 +8,8 @@ from policyfoundry.exceptions import AdapterNotFoundError
 
 if TYPE_CHECKING:
     from policyfoundry.adapters.base import FirewallAdapter
+
+logger = logging.getLogger(__name__)
 
 _ENTRY_POINT_GROUP = "policyfoundry.adapters"
 _BUILTIN_ADAPTER_NAME = "aws_sg"
@@ -40,6 +43,7 @@ class AdapterRegistry:
 
                 return AwsSecurityGroupAdapter(**kwargs)
             except ImportError:
+                logger.warning("Failed to import adapter module", exc_info=True)
                 pass
 
         if name == _BUILTIN_NULL_ADAPTER_NAME:

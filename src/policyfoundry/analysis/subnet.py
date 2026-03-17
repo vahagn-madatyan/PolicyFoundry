@@ -50,18 +50,15 @@ def group_to_subnets(
         out=groups,
     )
 
-    # Deduplicate by (cidr, frozenset(member_ips), pattern)
-    seen: set[tuple[str, frozenset[str], str]] = set()
+    # Deduplicate by (cidr, member_ips) — _merge_same_subnet handles
+    # pattern merging downstream for groups with identical keys.
+    seen: set[tuple[str, frozenset[str]]] = set()
     deduped: list[SubnetGroup] = []
     for sg in groups:
-        for pattern in sg.shared_patterns:
-            key = (sg.cidr, frozenset(sg.member_ips), str(sorted(pattern.items())))
-            if key not in seen:
-                seen.add(key)
-                # Only add once per unique (cidr, members) — collect all patterns
-                break
-        else:
+        key = (sg.cidr, frozenset(sg.member_ips))
+        if key in seen:
             continue
+        seen.add(key)
         deduped.append(sg)
 
     # Final dedup: merge groups with same cidr and member set

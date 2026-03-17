@@ -77,7 +77,7 @@ class TestE2ERichOutput:
         with p1, p2, p3:
             result = cli_runner.invoke(app, ["analyze", "--format", "rich"])
             assert result.exit_code == 0, f"Exit {result.exit_code}: {result.output}"
-            assert "Decisions" in result.output or "APPROVE" in result.output
+            assert "Decisions" in result.output or "CREATE" in result.output
 
     def test_rich_output_contains_token_usage(
         self, cli_runner, e2e_config, mock_e2e_llm_client, mock_e2e_adapter

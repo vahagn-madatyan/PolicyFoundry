@@ -214,3 +214,49 @@ class TestSortOrder:
         src_groups = [g for g in groups if "10.0." in g.cidr]
         assert len(src_groups) >= 2
         assert src_groups[0].member_count >= src_groups[1].member_count
+
+
+# ---------------------------------------------------------------------------
+# Deduplication correctness
+# ---------------------------------------------------------------------------
+
+class TestDeduplication:
+    """Dedup keeps groups with different member sets, removes true duplicates."""
+
+    def test_same_cidr_same_members_different_patterns_deduped(self) -> None:
+        """Two groups with same (cidr, member_ips) but different patterns
+        should collapse to one group after dedup + merge."""
+        flows = [
+            # Pattern A: both IPs → dst 1.2.3.4:443
+            _flow(src_ip="10.0.0.1", dst_ip="1.2.3.4", service_port=443),
+            _flow(src_ip="10.0.0.2", dst_ip="1.2.3.4", service_port=443),
+            # Pattern B: same IPs → dst 5.6.7.8:80
+            _flow(src_ip="10.0.0.1", dst_ip="5.6.7.8", service_port=80),
+            _flow(src_ip="10.0.0.2", dst_ip="5.6.7.8", service_port=80),
+        ]
+        groups = group_to_subnets(flows)
+        src_groups = [g for g in groups if g.cidr == "10.0.0.0/24"]
+        # Same CIDR + same member_ips → should be merged into one group
+        assert len(src_groups) == 1
+        sg = src_groups[0]
+        assert set(sg.member_ips) == {"10.0.0.1", "10.0.0.2"}
+        # Both patterns should survive via _merge_same_subnet
+        assert len(sg.shared_patterns) == 2
+
+    def test_same_cidr_different_members_kept(self) -> None:
+        """Groups with the same CIDR but different member sets are kept
+        separate — dedup must not collapse them."""
+        flows = [
+            # Group A: IPs 1,2 → dst 1.2.3.4:443
+            _flow(src_ip="10.0.0.1", dst_ip="1.2.3.4", service_port=443),
+            _flow(src_ip="10.0.0.2", dst_ip="1.2.3.4", service_port=443),
+            # Group B: IPs 3,4 → dst 5.6.7.8:80 (same /24, different members)
+            _flow(src_ip="10.0.0.3", dst_ip="5.6.7.8", service_port=80),
+            _flow(src_ip="10.0.0.4", dst_ip="5.6.7.8", service_port=80),
+        ]
+        groups = group_to_subnets(flows)
+        src_groups = [g for g in groups if g.cidr == "10.0.0.0/24"]
+        assert len(src_groups) == 2
+        member_sets = {frozenset(g.member_ips) for g in src_groups}
+        assert frozenset({"10.0.0.1", "10.0.0.2"}) in member_sets
+        assert frozenset({"10.0.0.3", "10.0.0.4"}) in member_sets

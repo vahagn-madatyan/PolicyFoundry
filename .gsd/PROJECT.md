@@ -15,9 +15,9 @@ Point the CLI at real traffic data and get back actionable, risk-scored firewall
 1. **VPC Flow Log mode** (`--source local|s3`): Ingest AWS VPC Flow Logs → 5-stage LangGraph analysis → Rich terminal output and JSON export. AWS Security Group adapter, ReadOnlyAdapter safety enforcement.
 2. **Excel traffic mode** (`--source excel`): Ingest Excel traffic exports → auto-detect 10 columns → direction inference + flow aggregation (~603 tuples from 83K rows) + subnet grouping → 5-stage LangGraph pipeline with NullAdapter → Rich/JSON output → xlsx/pdf change request form export with custom template support.
 
-Infrastructure: Terraform test environment, Docker packaging. 623 tests passing (611 unit/integration + 12 e2e).
+Infrastructure: Terraform test environment, Docker packaging. 661 tests passing.
 
-**M002 PR review identified 14 issues (4 critical + 10 important)** — silent failures, prompt errors, wrong stage reporting, missing token tracking, type safety gaps. M003 addresses these before adding new capability.
+**M003-2heki1 complete.** All 14 PR review issues from M002 fixed across 3 slices: S01 (pipeline correctness & observability), S02 (silent failure elimination), S03 (type safety & data integrity). 661 tests passing (excluding credential-dependent AWS tests), zero regressions. Codebase is solid for M004.
 
 ## Architecture / Key Patterns
 
@@ -42,5 +42,5 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 
 - [x] **M001: PolicyFoundry MVP** — VPC Flow Log → LangGraph pipeline → Rich output with risk tables, JSON export, suggest-only safety, Terraform + Docker packaging
 - [x] **M002: Excel Traffic Analysis & Change Request Forms** — Excel traffic log → multi-stage LangGraph pipeline → FW rule suggestions → Excel/PDF change request form export
-- [ ] **M003-2heki1: PR Review Bug Fixes** — Fix 14 critical + important issues from M002 PR review: pipeline correctness, silent failure elimination, type safety
+- [x] **M003-2heki1: PR Review Bug Fixes** — Fixed 14 critical + important issues: pipeline correctness, silent failure elimination, type safety. 661 tests, zero regressions.
 - [ ] **M004: Secrets Management** — .env file support, OS credential store (macOS Keychain / Windows Credential Manager), `policyfoundry secret` CLI commands
