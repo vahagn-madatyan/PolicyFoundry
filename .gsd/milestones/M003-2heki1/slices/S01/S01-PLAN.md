@@ -39,7 +39,7 @@
   - Verify: `python3 -m pytest tests/test_pipeline/ -v`
   - Done when: All 8 `complete()` calls pass `stage=`; both runners extract stage from exception chain; new tests pass
 
-- [ ] **T02: Fix generate prompt to reference actual shared_patterns field names** `est:20m`
+- [x] **T02: Fix generate prompt to reference actual shared_patterns field names** `est:20m`
   - Why: The generate prompt tells the LLM that `shared_patterns` has a `counterpart_ip` key — this key doesn't exist. Actual keys are `dst_ip` (source grouping) and `src_ip` (destination grouping). This causes LLM hallucination (R402).
   - Files: `src/policyfoundry/pipeline/excel_prompts/generate.py`, `tests/test_pipeline/test_excel_stages.py`
   - Do: In `excel_prompts/generate.py` lines 18-22, replace the prompt text that references `counterpart_ip` with accurate description of both `dst_ip` and `src_ip` field variants (both can appear in the same list of subnet groups), plus `service_port` and `protocol`. Add a test that asserts the system prompt string contains `dst_ip` and `src_ip` and does NOT contain `counterpart_ip`.

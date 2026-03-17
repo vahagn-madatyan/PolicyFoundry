@@ -690,6 +690,47 @@ def sample_excel_decisions() -> list[RuleDecision]:
 
 
 # ---------------------------------------------------------------------------
+# Generate prompt content tests
+# ---------------------------------------------------------------------------
+
+
+class TestExcelGeneratePromptContent:
+    """Verify the generate system prompt references correct shared_patterns field names."""
+
+    def test_prompt_contains_dst_ip(self) -> None:
+        """Prompt references dst_ip for source-side subnet groups."""
+        from policyfoundry.pipeline.excel_prompts.generate import EXCEL_GENERATE_SYSTEM_PROMPT
+
+        assert "dst_ip" in EXCEL_GENERATE_SYSTEM_PROMPT
+
+    def test_prompt_contains_src_ip(self) -> None:
+        """Prompt references src_ip for destination-side subnet groups."""
+        from policyfoundry.pipeline.excel_prompts.generate import EXCEL_GENERATE_SYSTEM_PROMPT
+
+        assert "src_ip" in EXCEL_GENERATE_SYSTEM_PROMPT
+
+    def test_prompt_does_not_contain_counterpart_ip(self) -> None:
+        """counterpart_ip is not a real field — must not appear in prompt."""
+        from policyfoundry.pipeline.excel_prompts.generate import EXCEL_GENERATE_SYSTEM_PROMPT
+
+        assert "counterpart_ip" not in EXCEL_GENERATE_SYSTEM_PROMPT
+
+    def test_prompt_describes_both_grouping_directions(self) -> None:
+        """Prompt explains both source-side and destination-side grouping."""
+        from policyfoundry.pipeline.excel_prompts.generate import EXCEL_GENERATE_SYSTEM_PROMPT
+
+        assert "Source-side groups" in EXCEL_GENERATE_SYSTEM_PROMPT
+        assert "Destination-side groups" in EXCEL_GENERATE_SYSTEM_PROMPT
+
+    def test_prompt_mentions_service_port_and_protocol(self) -> None:
+        """Prompt references the other shared_patterns keys."""
+        from policyfoundry.pipeline.excel_prompts.generate import EXCEL_GENERATE_SYSTEM_PROMPT
+
+        assert "service_port" in EXCEL_GENERATE_SYSTEM_PROMPT
+        assert "protocol" in EXCEL_GENERATE_SYSTEM_PROMPT
+
+
+# ---------------------------------------------------------------------------
 # Generate stage tests
 # ---------------------------------------------------------------------------
 

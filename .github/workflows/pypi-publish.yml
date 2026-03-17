@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/policyfoundry
+      url: https://pypi.org/p/policy-foundry
     permissions:
       id-token: write
 
@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypitest
-      url: https://test.pypi.org/p/policyfoundry
+      url: https://test.pypi.org/p/policy-foundry
     permissions:
       id-token: write
 

@@ -25,9 +25,13 @@ firewall rules to reference. All proposals are for NEW rules.
 - Subnet grouping has been performed upstream. You will receive \
 SubnetGroup candidates — groups of IPs that share a /24 network \
 and common traffic patterns. Each SubnetGroup has a ``shared_patterns`` \
-list where each entry contains keys: ``counterpart_ip`` (the common \
-remote IP they talk to), ``service_port`` (the shared destination \
-port), and ``protocol`` (TCP or UDP).
+list where each entry is a dict with ``service_port`` (the shared \
+destination port), ``protocol`` (TCP or UDP), and either ``dst_ip`` \
+or ``src_ip`` depending on the grouping direction:
+  - **Source-side groups** (member IPs are sources): patterns contain \
+``dst_ip`` — the common destination IP they all talk to.
+  - **Destination-side groups** (member IPs are destinations): patterns \
+contain ``src_ip`` — the common source IP sending to all of them.
 
 CIDR format guidance:
 - Use 10.1.2.3/32 for individual IP addresses.

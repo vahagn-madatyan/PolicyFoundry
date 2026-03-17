@@ -44,6 +44,12 @@ The generate prompt in `src/policyfoundry/pipeline/excel_prompts/generate.py` (l
 - `src/policyfoundry/analysis/models.py` — data model confirming actual field names (`dst_ip`, `src_ip`, `service_port`, `protocol`)
 - T01 completed — stage files have been edited but this task's changes are in a different file (`excel_prompts/generate.py`)
 
+## Observability Impact
+
+- **Prompt correctness signal**: The generate prompt now accurately describes the `shared_patterns` schema, so LLM-generated proposals should reference real field names (`dst_ip`/`src_ip`) instead of hallucinated ones (`counterpart_ip`). Downstream, if proposals still reference `counterpart_ip`, it indicates a caching or prompt-assembly issue — not a prompt content issue.
+- **Regression guard**: Test in `test_excel_stages.py` asserts `dst_ip` and `src_ip` present, `counterpart_ip` absent. Future prompt edits that reintroduce the wrong field name will fail CI immediately.
+- **Inspection**: `rg 'counterpart_ip' src/policyfoundry/pipeline/excel_prompts/` should always return empty.
+
 ## Expected Output
 
 - `src/policyfoundry/pipeline/excel_prompts/generate.py` — prompt text accurately describes `dst_ip`/`src_ip` field names
