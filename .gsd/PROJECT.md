@@ -17,7 +17,7 @@ Point the CLI at real traffic data and get back actionable, risk-scored firewall
 
 Infrastructure: Terraform test environment, Docker packaging. 623 tests passing (611 unit/integration + 12 e2e).
 
-**M002 PR review identified 14 issues (4 critical + 10 important)** — silent failures, prompt errors, wrong stage reporting, missing token tracking, type safety gaps. M003 addresses these before adding new capability.
+**M003-2heki1 complete.** All 14 PR review issues from M002 fixed across 3 slices: S01 (pipeline correctness & observability), S02 (silent failure elimination), S03 (type safety & data integrity). 679 tests passing (56 new targeted tests, zero regressions). Codebase is solid for M004.
 
 ## Architecture / Key Patterns
 
@@ -42,5 +42,5 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 
 - [x] **M001: PolicyFoundry MVP** — VPC Flow Log → LangGraph pipeline → Rich output with risk tables, JSON export, suggest-only safety, Terraform + Docker packaging
 - [x] **M002: Excel Traffic Analysis & Change Request Forms** — Excel traffic log → multi-stage LangGraph pipeline → FW rule suggestions → Excel/PDF change request form export
-- [ ] **M003-2heki1: PR Review Bug Fixes** — Fix 14 critical + important issues from M002 PR review: pipeline correctness, silent failure elimination, type safety
+- [x] **M003-2heki1: PR Review Bug Fixes** — Fixed 14 critical + important issues: pipeline correctness, silent failure elimination, type safety. 679 tests, zero regressions.
 - [ ] **M004: Secrets Management** — .env file support, OS credential store (macOS Keychain / Windows Credential Manager), `policyfoundry secret` CLI commands

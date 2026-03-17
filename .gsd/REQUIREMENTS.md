@@ -4,28 +4,6 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Active
 
-### R406 — `RuleDecision.action` must be an enum (not bare `str`) since it drives control flow (`"SKIP"` check). `SubnetGroup.member_count` must have a consistency validator ensuring it equals `len(member_ips)`.
-- Class: quality-attribute
-- Status: active
-- Description: `RuleDecision.action` must be an enum (not bare `str`) since it drives control flow (`"SKIP"` check). `SubnetGroup.member_count` must have a consistency validator ensuring it equals `len(member_ips)`.
-- Why it matters: Bare string for action means typos silently change behavior. Divergent member_count produces incorrect subnet grouping metadata.
-- Source: execution
-- Primary owning slice: M003-2heki1/S03
-- Supporting slices: none
-- Validation: mapped
-- Notes: Covers PR review issues #10, #11.
-
-### R407 — Fix incorrect `dict[str, Any](usage_raw)` construction pattern and subnet dedup logic that can incorrectly drop groups before the merge step.
-- Class: quality-attribute
-- Status: active
-- Description: Fix incorrect `dict[str, Any](usage_raw)` construction pattern and subnet dedup logic that can incorrectly drop groups before the merge step.
-- Why it matters: The dict construction is confusing and non-standard. The subnet dedup `break`/`else: continue` pattern may silently drop valid groups.
-- Source: execution
-- Primary owning slice: M003-2heki1/S03
-- Supporting slices: none
-- Validation: mapped
-- Notes: Covers PR review issues #12, #13.
-
 ### R501 — PolicyFoundry loads secrets and configuration from `.env` files in the project directory using pydantic-settings' native DotEnvSettingsSource. Priority: init → env vars → .env → keychain → local YAML → global YAML.
 - Class: core-capability
 - Status: active
@@ -259,6 +237,28 @@ This file is the explicit capability and coverage contract for the project.
 - Validation: Both validate stages log rejected proposals with proposal_id and reason (7 tests). All 10 stage functions wrap exceptions in PipelineError with details["stage"] (11 tests). Stage-level wrapping catches before runner catch-all per D064.
 - Notes: Covers PR review issues #7, #9. Validate stage silently drops rejected proposals; all pipeline stages have zero local error handling.
 
+### R406 — `RuleDecision.action` must be an enum (not bare `str`) since it drives control flow (`"SKIP"` check). `SubnetGroup.member_count` must have a consistency validator ensuring it equals `len(member_ips)`.
+- Class: quality-attribute
+- Status: validated
+- Description: `RuleDecision.action` must be an enum (not bare `str`) since it drives control flow (`"SKIP"` check). `SubnetGroup.member_count` must have a consistency validator ensuring it equals `len(member_ips)`.
+- Why it matters: Bare string for action means typos silently change behavior. Divergent member_count produces incorrect subnet grouping metadata.
+- Source: execution
+- Primary owning slice: M003-2heki1/S03
+- Supporting slices: none
+- Validation: DecisionAction StrEnum (CREATE/SKIP/UPDATE) replaces bare str on RuleDecision.action — 10 targeted tests verify enum member validation, StrEnum type, invalid rejection, and RuleDecision integration. SubnetGroup model_validator enforces member_count == len(member_ips) — 2 tests verify consistent/mismatch cases. Enum immediately caught real bug: 3 test fixtures using invalid "APPROVE" action. 679 tests pass, zero regressions.
+- Notes: Covers PR review issues #10, #11. StrEnum (not plain Enum) preserves Instructor JSON serialization and .upper() compat (K001). See D065.
+
+### R407 — Fix incorrect `dict[str, Any](usage_raw)` construction pattern and subnet dedup logic that can incorrectly drop groups before the merge step.
+- Class: quality-attribute
+- Status: validated
+- Description: Fix incorrect `dict[str, Any](usage_raw)` construction pattern and subnet dedup logic that can incorrectly drop groups before the merge step.
+- Why it matters: The dict construction is confusing and non-standard. The subnet dedup `break`/`else: continue` pattern may silently drop valid groups.
+- Source: execution
+- Primary owning slice: M003-2heki1/S03
+- Supporting slices: none
+- Validation: dict[str, Any](usage_raw) replaced with standard dict(usage_raw) in 2 locations in output/models.py — covered by existing from_state and serialization tests. Subnet dedup simplified from break/else to seen-set on (cidr, frozenset(member_ips)) — 2 new tests verify same-members dedup and different-members retention. 679 tests pass, zero regressions.
+- Notes: Covers PR review issues #12, #13. Dedup key excludes patterns — pattern merging handled by _merge_same_subnet downstream (D066).
+
 ## Deferred
 
 ### R201 — Connect to a live firewall, fetch current rules, and compare against AI-proposed rules to identify gaps, redundancies, and conflicts.
@@ -332,8 +332,8 @@ This file is the explicit capability and coverage contract for the project.
 | R403 | failure-visibility | validated | M003-2heki1/S01 | none | Both runners extract stage from exc.__cause__ PipelineError details, not initial_state. 8 runner tests verify correct stage extraction and prove "starting" is never used. |
 | R404 | operability | validated | M003-2heki1/S01 | none | All 8 complete() calls (4 Excel + 4 VPC stages) pass stage= kwarg. 8 test assertions verify stage= in call_args for each stage. rg 'stage=' confirms all calls tagged. |
 | R405 | failure-visibility | validated | M003-2heki1/S01 | M003-2heki1/S02 | Both validate stages log rejected proposals with proposal_id and reason (7 tests). All 10 stage functions wrap exceptions in PipelineError with details["stage"] (11 tests). Stage-level wrapping catches before runner catch-all per D064. |
-| R406 | quality-attribute | active | M003-2heki1/S03 | none | mapped |
-| R407 | quality-attribute | active | M003-2heki1/S03 | none | mapped |
+| R406 | quality-attribute | validated | M003-2heki1/S03 | none | DecisionAction StrEnum (CREATE/SKIP/UPDATE) replaces bare str on RuleDecision.action — 10 targeted tests verify enum member validation, StrEnum type, invalid rejection, and RuleDecision integration. SubnetGroup model_validator enforces member_count == len(member_ips) — 2 tests verify consistent/mismatch cases. Enum immediately caught real bug: 3 test fixtures using invalid "APPROVE" action. 679 tests pass, zero regressions. |
+| R407 | quality-attribute | validated | M003-2heki1/S03 | none | dict[str, Any](usage_raw) replaced with standard dict(usage_raw) in 2 locations in output/models.py — covered by existing from_state and serialization tests. Subnet dedup simplified from break/else to seen-set on (cidr, frozenset(member_ips)) — 2 new tests verify same-members dedup and different-members retention. 679 tests pass, zero regressions. |
 | R501 | core-capability | active | M004 (provisional) | none | unmapped |
 | R502 | core-capability | active | M004 (provisional) | none | unmapped |
 | R503 | core-capability | active | M004 (provisional) | none | unmapped |
@@ -341,7 +341,7 @@ This file is the explicit capability and coverage contract for the project.
 
 ## Coverage Summary
 
-- Active requirements: 6
-- Mapped to slices: 6
-- Validated: 17 (R101, R102, R103, R104, R105, R106, R107, R108, R109, R110, R111, R112, R401, R402, R403, R404, R405)
+- Active requirements: 4
+- Mapped to slices: 4
+- Validated: 19 (R101, R102, R103, R104, R105, R106, R107, R108, R109, R110, R111, R112, R401, R402, R403, R404, R405, R406, R407)
 - Unmapped active requirements: 0

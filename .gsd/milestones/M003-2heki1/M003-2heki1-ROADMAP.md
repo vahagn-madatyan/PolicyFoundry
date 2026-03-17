@@ -54,7 +54,7 @@ This milestone is complete only when all are true:
 - [x] **S02: Silent Failure Elimination** `risk:medium` `depends:[]`
   > After this: Template with no matching columns raises `ExportError`; render failures surface console warnings; orphaned decisions are logged; adapter `ImportError` is logged. Verified by targeted tests.
 
-- [ ] **S03: Type Safety & Data Integrity** `risk:low` `depends:[]`
+- [x] **S03: Type Safety & Data Integrity** `risk:low` `depends:[]`
   > After this: `RuleDecision.action` is a `DecisionAction` enum; `SubnetGroup.member_count` has a consistency validator; `dict()` construction is standard; subnet dedup produces correct results. Verified by targeted tests.
 
 ## Boundary Map
