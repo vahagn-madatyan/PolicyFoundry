@@ -125,24 +125,32 @@ def _fill_template(
 ) -> None:
     """Fill a user-provided template by matching column headers.
 
-    Scans row 1 for known column names (case-insensitive), finds the first
-    empty row after the header, and writes data into matched columns only.
+    Scans all rows for a row containing known column names
+    (case-insensitive), finds the first empty row after that header,
+    and writes data into matched columns only.
     """
-    # Scan header row for column mapping
+    # Scan rows 1..20 for a header row with known column names
     col_mapping: dict[int, str] = {}  # col_index → field_name
-    for col_idx in range(1, ws.max_column + 1 if ws.max_column else 1):
-        header_val = ws.cell(row=1, column=col_idx).value
-        if header_val is not None:
-            normalized = str(header_val).strip().lower()
-            if normalized in COLUMN_MAP:
-                col_mapping[col_idx] = COLUMN_MAP[normalized]
+    header_row = 1
+    max_col = ws.max_column or 1
+    for row_num in range(1, min(21, (ws.max_row or 1) + 1)):
+        row_mapping: dict[int, str] = {}
+        for col_idx in range(1, max_col + 1):
+            header_val = ws.cell(row=row_num, column=col_idx).value
+            if header_val is not None:
+                normalized = str(header_val).strip().lower()
+                if normalized in COLUMN_MAP:
+                    row_mapping[col_idx] = COLUMN_MAP[normalized]
+        if len(row_mapping) > len(col_mapping):
+            col_mapping = row_mapping
+            header_row = row_num
 
     if not col_mapping:
         return  # No matching columns found — nothing to fill
 
     # Find first empty row after header
-    start_row = 2
-    for row_num in range(2, (ws.max_row or 1) + 1):
+    start_row = header_row + 1
+    for row_num in range(header_row + 1, (ws.max_row or 1) + 1):
         has_data = any(
             ws.cell(row=row_num, column=c).value is not None
             for c in col_mapping

@@ -72,6 +72,10 @@ ollama pull llama3.2
 **Analyze an Excel traffic export:**
 
 ```bash
+# Use the included sample file
+policyfoundry analyze --source excel --file examples/input/test-FW501_20260219_All_App1-updated.xlsx
+
+# Or your own file
 policyfoundry analyze --source excel --file traffic.xlsx
 ```
 

@@ -401,7 +401,7 @@ class TestSheetSelection:
 # Integration: Real 83K-row sample file
 # ---------------------------------------------------------------------------
 
-REAL_SAMPLE = Path("referance/samples/test-FW501_20260219_All_App1-updated.xlsx")
+REAL_SAMPLE = Path("examples/input/test-FW501_20260219_All_App1-updated.xlsx")
 
 
 @pytest.mark.skipif(
