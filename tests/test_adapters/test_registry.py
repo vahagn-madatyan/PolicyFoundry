@@ -80,3 +80,34 @@ class TestAdapterRegistry:
         mock_ep.return_value = [_make_entry_point("fake", mock_cls)]
         AdapterRegistry.get_adapter("fake", sg_id="sg-123", region="us-east-1")
         mock_cls.assert_called_once_with(sg_id="sg-123", region="us-east-1")
+
+    def test_get_adapter_logs_import_error(self, mock_ep: MagicMock) -> None:
+        """get_adapter logs warning with exc_info when aws_sg import fails."""
+        mock_ep.return_value = []
+
+        with patch(
+            "policyfoundry.adapters.registry.AdapterRegistry.get_adapter",
+            wraps=AdapterRegistry.get_adapter,
+        ):
+            with patch(
+                "policyfoundry.adapters.registry.logger"
+            ) as mock_logger:
+                # Make the aws_sg import raise ImportError
+                import_target = (
+                    "policyfoundry.adapters.aws_sg"
+                )
+                import builtins
+                original_import = builtins.__import__
+
+                def side_effect_import(name, *args, **kwargs):
+                    if name == import_target:
+                        raise ImportError("No module named 'policyfoundry.adapters.aws_sg'")
+                    return original_import(name, *args, **kwargs)
+
+                with patch("builtins.__import__", side_effect=side_effect_import):
+                    with pytest.raises(AdapterNotFoundError):
+                        AdapterRegistry.get_adapter("aws_sg")
+
+                mock_logger.warning.assert_called_once_with(
+                    "Failed to import adapter module", exc_info=True
+                )

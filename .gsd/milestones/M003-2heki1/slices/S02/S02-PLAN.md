@@ -26,7 +26,7 @@
 
 ## Tasks
 
-- [ ] **T01: Raise ExportError on empty template match, log orphaned decisions and adapter ImportError** `est:45m`
+- [x] **T01: Raise ExportError on empty template match, log orphaned decisions and adapter ImportError** `est:45m`
   - Why: Three independent silent-failure fixes that each touch one source file and one test file — small enough to combine. Covers the template deception (success message on empty output), orphaned decision drops, and swallowed adapter ImportError.
   - Files: `src/policyfoundry/export/change_request.py`, `src/policyfoundry/export/models.py`, `src/policyfoundry/adapters/registry.py`, `tests/test_export/test_xlsx_export.py`, `tests/test_export/test_export_models.py`, `tests/test_adapters/test_registry.py`
   - Do: (1) In `_fill_template()`, replace `if not col_mapping: return` with `raise ExportError("Template contains no recognized columns", error_code="TEMPLATE_NO_MATCHING_COLUMNS")`. (2) In `flatten_to_entries()`, add `logger.warning(f"Orphaned decision {decision.decision_id}: proposal {decision.proposal_id} not found")` before the `continue`. (3) In `get_adapter()`, add `logger.warning("Failed to import adapter module", exc_info=True)` before the `pass` in the `except ImportError` block. (4) Add targeted tests for each: `pytest.raises(ExportError)` on template with unrecognized columns; assert `logger.warning` called with orphaned decision context; assert `logger.warning` called on mocked ImportError.
