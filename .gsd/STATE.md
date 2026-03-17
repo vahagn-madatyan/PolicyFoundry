@@ -1,9 +1,9 @@
 # GSD State
 
 **Active Milestone:** M003-2heki1: PR Review Bug Fixes
-**Active Slice:** S02: Silent Failure Elimination
+**Active Slice:** S03: Type Safety & Data Integrity
 **Phase:** executing
-**Requirements Status:** 7 active · 16 validated · 2 deferred · 2 out of scope
+**Requirements Status:** 6 active · 17 validated · 2 deferred · 2 out of scope
 
 ## Milestone Registry
 - ✅ **M001:** PolicyFoundry MVP
@@ -19,4 +19,4 @@
 - None
 
 ## Next Action
-Execute T01 of S02 (raise ExportError on empty template match, log orphaned decisions and adapter ImportError).
+Execute T01 of S03 (DecisionAction enum + SubnetGroup validator).
