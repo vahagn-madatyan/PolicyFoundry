@@ -38,6 +38,12 @@ Two data integrity fixes. First, replace the non-standard `dict[str, Any](usage_
 - `src/policyfoundry/analysis/subnet.py` — dedup block at lines 53–65 with `break`/`else: continue`
 - Existing test files for patterns and fixtures
 
+## Observability Impact
+
+- **dict construction fix**: No runtime behavior change — `dict(usage_raw)` produces the same result as `dict[str, Any](usage_raw)`. Failure mode: if `usage_raw` is not dict-like, `TypeError` propagates unchanged.
+- **subnet dedup fix**: Groups that were incorrectly dropped by the `break`/`else: continue` pattern will now be preserved. A future agent can inspect dedup correctness by checking `len(deduped)` vs `len(groups)` before `_merge_same_subnet`. If subnet groups with distinct member sets disappear from analysis output, the dedup key `(cidr, frozenset(member_ips))` is the place to look.
+- **Inspection**: Both fixes are pure data-transform logic — no new logging or metrics. Correctness is verified through unit tests. The seen-set approach is deterministic and inspectable via debugger or print statement on the `seen` set.
+
 ## Expected Output
 
 - `src/policyfoundry/output/models.py` — both `dict[str, Any](...)` calls replaced with `dict(...)`

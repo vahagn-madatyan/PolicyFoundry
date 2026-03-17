@@ -27,7 +27,7 @@
   - Verify: `pytest tests/test_models/test_pipeline_schema.py tests/test_analysis/test_models.py -v && pytest --tb=short -q`
   - Done when: Enum and validator tests pass, full suite 623+ tests pass with zero regressions
 
-- [ ] **T02: Fix dict construction and simplify subnet dedup logic** `est:25m`
+- [x] **T02: Fix dict construction and simplify subnet dedup logic** `est:25m`
   - Why: R407 — `dict[str, Any](usage_raw)` is confusing non-standard construction; subnet dedup `break`/`else: continue` pattern can incorrectly drop groups before merge step
   - Files: `src/policyfoundry/output/models.py`, `src/policyfoundry/analysis/subnet.py`, `tests/test_analysis/test_subnet.py`
   - Do: (1) Replace `dict[str, Any](usage_raw)` with `dict(usage_raw)` on lines 157 and 238 of `output/models.py` — preserve the type annotation on the left side. (2) Replace the dedup block (lines 53–65) in `analysis/subnet.py` with a seen-set on `(cidr, frozenset(member_ips))` — append only if key is novel. (3) Add targeted test for dedup: construct input where old logic would drop a group with a novel member set but a shared pattern, verify the simplified logic keeps it.
