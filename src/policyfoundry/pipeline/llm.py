@@ -66,6 +66,17 @@ _TRANSIENT_EXCEPTIONS = (
     litellm.RateLimitError,
 )
 
+# Provider → Instructor mode mapping.  All providers go through LiteLLM,
+# so we use LiteLLM-compatible modes only.  BEDROCK_TOOLS/ANTHROPIC_TOOLS
+# are for direct SDK use and don't work with from_litellm().
+_PROVIDER_MODES: dict[str, instructor.Mode] = {
+    "ollama": instructor.Mode.JSON,
+    "openai": instructor.Mode.JSON,
+    "bedrock": instructor.Mode.TOOLS,
+    "anthropic": instructor.Mode.TOOLS,
+}
+_DEFAULT_MODE = instructor.Mode.MD_JSON
+
 
 # --- Helpers -------------------------------------------------------------
 
@@ -174,17 +185,21 @@ class LLMClient:
         alongside the validated Pydantic model, enabling token usage
         extraction.
         """
-        result = await self._client.chat.completions.create_with_completion(
-            model=self._model_name,
-            response_model=response_model,
-            messages=messages,
-            max_retries=_MAX_VALIDATION_RETRIES,
-            temperature=temperature,
-            max_tokens=self._max_tokens,
-            timeout=self._timeout,
-            api_base=self._base_url,
-            api_key=self._api_key,
-        )
+        kwargs: dict[str, Any] = {
+            "model": self._model_name,
+            "response_model": response_model,
+            "messages": messages,
+            "max_retries": _MAX_VALIDATION_RETRIES,
+            "temperature": temperature,
+            "max_tokens": self._max_tokens,
+            "timeout": self._timeout,
+        }
+        if self._base_url is not None:
+            kwargs["api_base"] = self._base_url
+        if self._api_key is not None:
+            kwargs["api_key"] = self._api_key
+
+        result = await self._client.chat.completions.create_with_completion(**kwargs)
 
         model, raw_response = result
 
@@ -252,6 +267,13 @@ class LLMClient:
                 stage=stage,
             )
         except InstructorRetryException as exc:
+            last_error = str(exc.args[0]) if exc.args else "unknown"
+            logger.warning(
+                "Structured output failed for %s after %d attempts: %s",
+                response_model.__name__,
+                exc.n_attempts,
+                last_error,
+            )
             raise PipelineError(
                 f"Structured output failed after {exc.n_attempts} attempts",
                 error_code="LLM_PARSE_FAILED",
@@ -259,7 +281,7 @@ class LLMClient:
                     "model": self._model_name,
                     "response_model": response_model.__name__,
                     "attempts": exc.n_attempts,
-                    "last_error": str(exc.messages[-1]) if exc.messages else "unknown",
+                    "last_error": last_error,
                 },
             ) from exc
         except _TRANSIENT_EXCEPTIONS as exc:
@@ -316,8 +338,12 @@ async def create_llm_client(config: LLMConfig) -> LLMClient:
     # Compose model identifier
     model_name = _compose_model_name(config.provider, config.model)
 
+    # Select Instructor mode based on provider
+    mode = _PROVIDER_MODES.get(config.provider, _DEFAULT_MODE)
+    logger.info("Using Instructor mode %s for provider %s", mode.value, config.provider)
+
     # Create Instructor-patched async client
-    client = instructor.from_litellm(acompletion, mode=instructor.Mode.JSON)
+    client = instructor.from_litellm(acompletion, mode=mode)
 
     # Ollama health check
     if config.provider == "ollama":

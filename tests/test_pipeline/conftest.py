@@ -21,9 +21,15 @@ from policyfoundry.config.models import LLMConfig
 from policyfoundry.pipeline.graph import PipelineContext
 from policyfoundry.pipeline.llm import LLMClient
 from policyfoundry.pipeline.schema import (
+    Anomaly,
+    BandwidthOutlier,
     PolicyProposal,
+    PortDistributionEntry,
+    RiskScore,
     RuleDecision,
+    RuleGap,
     SecurityAssessment,
+    TopTalker,
     TrafficAnalysis,
 )
 from policyfoundry.storage.models import (
@@ -108,16 +114,16 @@ def sample_traffic_analysis() -> TrafficAnalysis:
         unique_sources=42,
         unique_destinations=8,
         top_talkers=[
-            {"ip": "10.0.1.50", "bytes": 5000000, "protocol": "TCP"},
-            {"ip": "10.0.1.75", "bytes": 3200000, "protocol": "TCP"},
+            TopTalker(ip="10.0.1.50", bytes=5000000, protocol="TCP"),
+            TopTalker(ip="10.0.1.75", bytes=3200000, protocol="TCP"),
         ],
         port_distribution=[
-            {"port": 443, "protocol": "TCP", "percentage": 68.5},
-            {"port": 80, "protocol": "TCP", "percentage": 22.1},
+            PortDistributionEntry(port=443, protocol="TCP", percentage=68.5),
+            PortDistributionEntry(port=80, protocol="TCP", percentage=22.1),
         ],
         anomalies=[],
         bandwidth_outliers=[
-            {"ip": "10.0.1.50", "bytes": 5000000, "reason": "3x median"},
+            BandwidthOutlier(ip="10.0.1.50", bytes=5000000, reason="3x median"),
         ],
     )
 
@@ -171,11 +177,11 @@ def sample_security_assessment() -> SecurityAssessment:
     return SecurityAssessment(
         overall_risk=RiskLevel.MEDIUM,
         risk_scores=[
-            {"category": "open_ports", "score": 0.6, "description": "Several high-risk ports open"},
-            {"category": "denied_traffic", "score": 0.3, "description": "Moderate denied traffic volume"},
+            RiskScore(category="open_ports", score=0.6, description="Several high-risk ports open"),
+            RiskScore(category="denied_traffic", score=0.3, description="Moderate denied traffic volume"),
         ],
         rule_gaps=[
-            {"gap_type": "missing_rule", "description": "No rule for SSH traffic from 10.0.1.0/24", "severity": "MEDIUM"},
+            RuleGap(gap_type="missing_rule", description="No rule for SSH traffic from 10.0.1.0/24", severity="MEDIUM"),
         ],
         compliance_findings=["SSH access not restricted to bastion host"],
     )
