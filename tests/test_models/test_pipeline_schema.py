@@ -6,10 +6,14 @@ import pytest
 from pydantic import ValidationError
 
 from policyfoundry.pipeline.schema import (
+    Anomaly,
+    BandwidthOutlier,
     DecisionAction,
     PolicyProposal,
+    PortDistributionEntry,
     RuleDecision,
     SecurityAssessment,
+    TopTalker,
     TrafficAnalysis,
 )
 
@@ -21,24 +25,42 @@ def test_valid_traffic_analysis() -> None:
         total_flows=1500,
         unique_sources=42,
         unique_destinations=10,
-        top_talkers=[{"ip": "10.0.1.5", "flows": 300}],
-        port_distribution=[{"port": 22, "count": 800}],
-        anomalies=[{"type": "port_scan", "source": "203.0.113.5"}],
-        bandwidth_outliers=[{"ip": "10.0.1.5", "bytes": 50000000}],
+        top_talkers=[TopTalker(ip="10.0.1.5", flows=300)],
+        port_distribution=[PortDistributionEntry(port=22, count=800)],
+        anomalies=[Anomaly(type="port_scan", source="203.0.113.5")],
+        bandwidth_outliers=[BandwidthOutlier(ip="10.0.1.5", bytes=50000000)],
     )
     assert ta.summary == "High SSH traffic from external sources"
     assert ta.total_flows == 1500
     assert ta.unique_sources == 42
     assert ta.unique_destinations == 10
     assert len(ta.top_talkers) == 1
+    assert ta.top_talkers[0].ip == "10.0.1.5"
     assert len(ta.port_distribution) == 1
     assert len(ta.anomalies) == 1
     assert len(ta.bandwidth_outliers) == 1
 
 
+def test_traffic_analysis_accepts_dicts() -> None:
+    """TrafficAnalysis coerces dicts into typed sub-models (LLM compat)."""
+    ta = TrafficAnalysis(
+        summary="test",
+        total_flows=0,
+        unique_sources=0,
+        unique_destinations=0,
+        top_talkers=[{"ip": "10.0.0.1", "flows": 100}],
+        port_distribution=[{"port": 80, "count": 500}],
+        anomalies=[{"type": "port_scan", "source": "10.0.0.1"}],
+        bandwidth_outliers=[{"ip": "10.0.0.1", "bytes": 999999}],
+    )
+    assert isinstance(ta.top_talkers[0], TopTalker)
+    assert isinstance(ta.port_distribution[0], PortDistributionEntry)
+    assert isinstance(ta.anomalies[0], Anomaly)
+
+
 def test_traffic_analysis_negative_counts_rejected() -> None:
     """TrafficAnalysis rejects negative values for count fields."""
-    base = {
+    base: dict[str, Any] = {
         "summary": "test",
         "total_flows": 0,
         "unique_sources": 0,
@@ -59,15 +81,18 @@ def test_traffic_analysis_negative_counts_rejected() -> None:
 
 
 def test_traffic_analysis_list_fields() -> None:
-    """TrafficAnalysis list fields accept lists of dicts."""
+    """TrafficAnalysis list fields accept typed sub-models and empty lists."""
     ta = TrafficAnalysis(
         summary="test",
         total_flows=0,
         unique_sources=0,
         unique_destinations=0,
-        top_talkers=[{"ip": "10.0.0.1", "flows": 100}, {"ip": "10.0.0.2", "flows": 50}],
-        port_distribution=[{"port": 80, "count": 500}],
-        anomalies=[{"ip": "10.0.0.1", "bytes": 999999}],
+        top_talkers=[
+            TopTalker(ip="10.0.0.1", flows=100),
+            TopTalker(ip="10.0.0.2", flows=50),
+        ],
+        port_distribution=[PortDistributionEntry(port=80, count=500)],
+        anomalies=[Anomaly(type="scan", source="10.0.0.1")],
         bandwidth_outliers=[],
     )
     assert len(ta.top_talkers) == 2
@@ -77,21 +102,24 @@ def test_traffic_analysis_list_fields() -> None:
 
 def test_valid_security_assessment() -> None:
     """SecurityAssessment accepts valid data with all fields populated."""
+    from policyfoundry.pipeline.schema import RiskScore, RuleGap
+
     sa = SecurityAssessment(
         overall_risk="HIGH",
-        risk_scores=[{"category": "open_ports", "score": 8.5}],
-        rule_gaps=[{"description": "No egress filtering"}],
+        risk_scores=[RiskScore(category="open_ports", score=8.5)],
+        rule_gaps=[RuleGap(description="No egress filtering")],
         compliance_findings=["CIS 4.1 - Restrict SSH access"],
     )
     assert sa.overall_risk == "HIGH"
     assert len(sa.risk_scores) == 1
+    assert sa.risk_scores[0].category == "open_ports"
     assert len(sa.rule_gaps) == 1
     assert sa.compliance_findings == ["CIS 4.1 - Restrict SSH access"]
 
 
 def test_security_assessment_risk_levels() -> None:
     """SecurityAssessment accepts all RiskLevel values for overall_risk."""
-    base = {"risk_scores": [], "rule_gaps": []}
+    base: dict[str, Any] = {"risk_scores": [], "rule_gaps": []}
     for level in ("LOW", "MEDIUM", "HIGH", "CRITICAL"):
         sa = SecurityAssessment(**{**base, "overall_risk": level})
         assert sa.overall_risk == level
