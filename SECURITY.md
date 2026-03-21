@@ -2,41 +2,40 @@
 
 ## Supported Versions
 
-| Version | Supported |
-| --- | --- |
-| 0.1.x | Yes |
+| Version | Supported          |
+| ------- | ------------------ |
+| latest  | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
-**Please do not open a public GitHub issue for security vulnerabilities.**
+If you discover a security vulnerability in this project, please report it
+responsibly. **Do not open a public GitHub issue for security vulnerabilities.**
 
-Instead, report vulnerabilities privately by sending a direct message on LinkedIn:
+### How to Report
 
-[linkedin.com/in/mvahagn](https://www.linkedin.com/in/mvahagn)
+- **Email:** [me@vahagn.dev](mailto:me@vahagn.dev)
+- **Subject line:** `[SECURITY] <repo-name> — <brief description>`
 
-Please include:
+### What to Include
 
-- Description of the vulnerability
-- Steps to reproduce
-- Potential impact
-- Suggested fix (if any)
+- A description of the vulnerability and its potential impact
+- Steps to reproduce the issue
+- Any proof-of-concept code or screenshots
+- Your suggested fix (if applicable)
 
-You should receive an acknowledgment within 48 hours. We will work with you to understand the issue and coordinate a fix before any public disclosure.
+### Disclosure Timeline
 
-## Scope
+- **Acknowledgement:** We will acknowledge receipt of your report within
+  **48 hours**.
+- **Initial assessment:** We will provide an initial assessment within
+  **7 days**.
+- **Resolution target:** We aim to resolve confirmed vulnerabilities within
+  **90 days** of disclosure.
+- **Public disclosure:** We will coordinate with you on public disclosure
+  timing after a fix is released.
 
-Security issues in the following areas are in scope:
+## Security Measures
 
-- Command injection via CLI inputs
-- Insecure handling of API keys or credentials
-- LLM prompt injection that bypasses safety controls
-- Unintended modification of live firewall rules
-- Dependency vulnerabilities with known exploits
-
-## Security Design
-
-PolicyFoundry is designed with the following security principles:
-
-- **Read-only by default** -- all firewall adapters are wrapped in a read-only safety layer and never modify live rules
-- **No credential storage** -- API keys are read from environment variables or config files, never stored by the application
-- **Structured LLM output** -- all LLM responses are validated through Pydantic models, reducing prompt injection risk
+This project uses GitHub Advanced Security features including CodeQL
+static analysis, Dependabot dependency monitoring, and branch protection
+rules where applicable.
