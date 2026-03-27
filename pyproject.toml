@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "policy-foundry"
-version = "0.2.0"
+version = "0.2.2"
 description = "AI-powered firewall policy management"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.12"
@@ -27,7 +27,7 @@ dependencies = [
     "duckdb>=1.5.0",
     "fpdf2>=2.8",
     "instructor[litellm]>=1.14.5",
-    "litellm>=1.0,!=1.82.7,!=1.82.8",  # CVE: supply chain compromise
+    "litellm==1.82.6",  # Pinned: 1.82.7/1.82.8 compromised, package quarantined on PyPI
     "langgraph>=1.1.0",
     "openpyxl>=3.1.5",
     "pyarrow>=23.0.1",
